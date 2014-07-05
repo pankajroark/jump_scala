@@ -1,7 +1,7 @@
 package com.pankaj.jump
 
 import com.twitter.finagle.{Http, Service}
-import com.twitter.util.{Await, Future}
+import com.twitter.util.{Await, Future, Try}
 import org.jboss.netty.handler.codec.http._
 import org.jboss.netty.buffer.ChannelBuffers
 
@@ -22,3 +22,4 @@ class JumpService extends Service[HttpRequest, HttpResponse] {
     Future.value(resp);
   }
 }
+
