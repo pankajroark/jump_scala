@@ -2,6 +2,10 @@ name := "fintry2"
 
 version := "1.0"
 
-scalaVersion := "2.9.2"
+scalaVersion := "2.10.2"
 
-libraryDependencies += "com.twitter" %% "finagle-http" % "6.2.0"
+libraryDependencies ++= Seq(
+  "com.twitter" %% "finagle-http" % "6.2.0",
+  "com.twitter" %% "finagle-core" % "6.2.0",
+  "org.scalatest" %% "scalatest" % "2.2.0"
+)
