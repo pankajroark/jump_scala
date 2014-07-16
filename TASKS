@@ -1,0 +1,16 @@
+Implement a basic parser that provides a list of symbols
+Add an api that adds a path to include
+  - We'll find the git root of the path and add that to our list
+
+Git Root tracker will keep track of git roots
+This would also need to go into a table.
+
+Implement DiskCrawler that goes over each path under the git roots and gets the mod stamp of each file and inserts in the table
+Implement DirtFinder that finds the modified files and puts them on the dirt queue.
+  DirtFinder just goes through the file table and finds the files that have a mod stamp higher than the process time and inserts them into the process queue.
+  How do we make sure that DF does queue same files again and again
+  When we process the file we'll update the process time of the file, before we parse the file we'll check the modstamp of the file again to avoid unnecessary work.
+
+Implement ParseWorker that reads dirty files off the dirtqueue, parses the files and inserts the symbols into the symbol table.
+
+

@@ -9,8 +9,10 @@ import com.pankaj.jump.parser.Parser
 object Hi {
   def main(args:Array[String]): Unit = {
     val server = Http.serve(":8081", new JumpService)
+    /*
     val file: Path = "/Users/pankajg/workspace/bc3/finagle/finagle-core/src/main/scala/com/twitter/finagle/Context.scala"
     println(Parser.parse(file).mkString("\n"))
+    */
     Await.ready(server)
   }
 }
