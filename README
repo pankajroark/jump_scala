@@ -1,0 +1,45 @@
+*Dirt Finder*
+dirt finder will traverse the filesystem tree and find the files whose mod stamp has changed (can we integrate with git and get hash instead?)
+
+DF should run periodically, perhaps a separate thread
+
+
+*Parser*
+parser takes dirty files off a queue and parses them. Ultimately updates the symbol table.
+Also updates the file table with imports
+Perhaps a separate thread
+
+*WorkQueue*
+A simple ArrayBlockingQueue that contains the dirty files as provided by DirtFinder
+
+
+*Symbol Table* contains the following:
+Unique Id | name | qualified name | file | type | row | col
+
+Secondary indices on name, file
+
+Also *File Table*
+Path | ModStamp | Imports
+
+File table will be used to find dirty files
+
+*Server*
+Provides the following queries
+
+GET /lookup/symbol?filepath=URLEncodedFilePath
+Lookup the symbol in symbol table and provide the location
+We'll have to identify the imports here. Get all the matching locations from the Symbol table.
+And then find the best match:
+# Lookup exact imported symbols first
+# Go over all the matching symbols and find the ones that fall under one of wild card namespaces.
+  From such symbols find the one that has closest match with one of the wild card imports
+  If we form the wild card tree then just following the tree for each symbol should do both.
+
+In future we may want to be clever about identifying imports for the symbol by parsing the buffer.
+
+POST /dirty/URLEncodedFilePath
+Mark the file at given path as dirty. Just update the file table directly.
+
+*Cache* (Optional)
+We may want to cache recently/frequently looked up symbols in memory.
+
