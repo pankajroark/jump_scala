@@ -4,8 +4,7 @@ import com.pankaj.jump.Path
 import com.twitter.util.{Return, Throw, Try}
 import java.io.File
 
-object RootsTracker {
-  // todo synchronize access to roots
+class RootsTracker {
   private var _roots = Set.empty[Path]
 
   // This is ok since list is immutable
@@ -24,7 +23,9 @@ object RootsTracker {
   def track(path: Path): Boolean = {
     findGitRoot(path) match {
       case Some(root) =>
-        _roots = _roots + root
+        this.synchronized {
+          _roots = _roots + root
+        }
         true
       case None => false
     }

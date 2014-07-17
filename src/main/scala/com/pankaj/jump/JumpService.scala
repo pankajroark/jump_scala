@@ -12,13 +12,17 @@ import com.pankaj.jump.fs.RootsTracker
 
 import java.net.URLDecoder
 
-class JumpService extends Service[HttpRequest, HttpResponse] {
-  val UTF8 = "UTF-8"
+class JumpService(
+  rootsTracker: RootsTracker
+) extends Service[HttpRequest, HttpResponse] {
 
-  val NotFound = new DefaultHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.NOT_FOUND)
+  val UTF8 = "UTF-8"
+  val httpVer = HttpVersion.HTTP_1_1
+
+  val NotFound = new DefaultHttpResponse(httpVer, HttpResponseStatus.NOT_FOUND)
 
   def okResponse(msg: => String) = {
-    val response = new DefaultHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.OK)
+    val response = new DefaultHttpResponse(httpVer, HttpResponseStatus.OK)
     response.setContent(copiedBuffer(msg, UTF8))
     response
   }
@@ -35,13 +39,13 @@ class JumpService extends Service[HttpRequest, HttpResponse] {
           request.params.get("root") match {
             case Some(path) => 
               // todo return 400 in case root could not be added
-              okResponse(RootsTracker.track(path).toString)
+              okResponse(rootsTracker.track(path).toString)
             case _ => NotFound
           }
         }
 
       case Root / "roots" =>
-        Future { okResponse(RootsTracker.roots.mkString("\n")) }
+        Future { okResponse(rootsTracker.roots.mkString("\n")) }
       case _ => Future{NotFound}
     }
 
