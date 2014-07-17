@@ -1,6 +1,7 @@
 package com.pankaj.jump
 
 import scala.annotation.tailrec
+import java.io.File
 
 object Path {
   implicit def fromString(str: String): Path = {
@@ -27,7 +28,6 @@ case class Path(parts: Seq[String]) {
       rParts
     } else rParts.tail
 
-
     @tailrec 
     def go(xs: List[String], acc: List[Path]): List[Path] = xs match {
       case Nil => acc
@@ -36,4 +36,6 @@ case class Path(parts: Seq[String]) {
 
     go(rParts.toList, Nil).reverse
   }
+
+  def toFile: File = new File(toString())
 }

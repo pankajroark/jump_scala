@@ -1,5 +1,10 @@
 package com.pankaj.jump.fs
 
+import com.pankaj.jump.Path
+import java.io.File
+
+case class FileInfo(path: Path, modStamp: Long)
+
 // Crawl the disk at roots and update mod stamp of files
 // in File table
 // Only look for java/scala files
@@ -7,5 +12,34 @@ package com.pankaj.jump.fs
 class DiskCrawler(rootsTracker: RootsTracker) {
   def crawl() {
     println("crawl")
+    val roots = rootsTracker.roots
+    roots foreach { root =>
+      crawl(root, isJavaOrScalaFile _){ fi => 
+        // todo use log here instead of println
+        //println(fi.path)
+        //println(fi.modStamp)
+        // todo insert into the dirst queue here
+      } 
+    }
+  }
+
+  def isJavaOrScalaFile(f: File): Boolean = 
+    f.isFile && {
+      val ext = f.getName.split('.').last
+      ext == "scala" || ext == "java"
+    }
+
+  // Call f on each file under root
+  private def crawl(root: Path, filter: File => Boolean)(f: FileInfo => Unit) = {
+    def go(dir: File): Unit = {
+      for (child <- dir.listFiles) {
+        if(filter(child)) {
+          f(FileInfo(Path.fromString(child.getPath), child.lastModified))
+        } else if (child.isDirectory) {
+          go(child)
+        }
+      }
+    }
+    go(root.toFile)
   }
 }

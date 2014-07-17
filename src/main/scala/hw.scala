@@ -14,7 +14,7 @@ object Hi {
     val diskCrawler = new DiskCrawler(rootsTracker)
     val timer = new ScheduledThreadPoolTimer()
     // todo add a command line option for this
-    timer.schedule(5.minutes) {
+    timer.schedule(5.seconds) {
       diskCrawler.crawl()
     }
 
