@@ -1,5 +1,7 @@
 package com.pankaj.jump
 
+import scala.annotation.tailrec
+
 object Path {
   implicit def fromString(str: String): Path = {
     if (!str.startsWith("/"))
@@ -25,8 +27,13 @@ case class Path(parts: Seq[String]) {
       rParts
     } else rParts.tail
 
-    dirs.tail.scanLeft(Path(Array(dirs.head))){ (ps: Path, p) =>
-      ps.prependDir(p)
+
+    @tailrec 
+    def go(xs: List[String], acc: List[Path]): List[Path] = xs match {
+      case Nil => acc
+      case y :: ys => go(ys, Path(xs.reverse) :: acc)
     }
+
+    go(rParts.toList, Nil).reverse
   }
 }

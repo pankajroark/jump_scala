@@ -9,15 +9,6 @@ object JumpHandler {
     Return("")
   }
 
-  // We can cache this possibly, check the cached candidates first
-  def findGitRoot(path: Path): Option[Path] = {
-    path.allDirs find { p =>
-      (p.appendDir(".git") map { gitPath => 
-        val gitDir = new File(gitPath.toString)
-        gitDir.exists
-      }) getOrElse false
-    }
-  }
 
   // Find the word under the cursor will all the namespaces
   def findNamespacedCurrentSymbol(loc: Loc): List[String] = {

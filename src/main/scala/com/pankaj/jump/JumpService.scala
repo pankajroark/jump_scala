@@ -8,10 +8,14 @@ import org.jboss.netty.handler.codec.http._
 import org.jboss.netty.buffer.ChannelBuffers
 import org.jboss.netty.buffer.ChannelBuffers.copiedBuffer
 
+import com.pankaj.jump.fs.RootsTracker
+
 import java.net.URLDecoder
 
 class JumpService extends Service[HttpRequest, HttpResponse] {
   val UTF8 = "UTF-8"
+
+  val NotFound = new DefaultHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.NOT_FOUND)
 
   def okResponse(msg: => String) = {
     val response = new DefaultHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.OK)
@@ -25,10 +29,20 @@ class JumpService extends Service[HttpRequest, HttpResponse] {
 
     object RootMatcher extends ParamMatcher("root")
 
-    (FinaglePath(request.path) :? request.params) match {
-      case Root / "add_root" :? RootMatcher(path)=>
-        Future { okResponse(path) }
-      case _ => Future{ new DefaultHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.NOT_FOUND)}
+    (FinaglePath(request.path)) match {
+      case Root / "add_root" =>
+        Future {
+          request.params.get("root") match {
+            case Some(path) => 
+              // todo return 400 in case root could not be added
+              okResponse(RootsTracker.track(path).toString)
+            case _ => NotFound
+          }
+        }
+
+      case Root / "roots" =>
+        Future { okResponse(RootsTracker.roots.mkString("\n")) }
+      case _ => Future{NotFound}
     }
 
   }
