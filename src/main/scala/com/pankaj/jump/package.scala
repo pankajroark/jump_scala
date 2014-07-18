@@ -19,10 +19,20 @@ package object jump {
 
     def parseLoc(str: String): Try[Loc] = {
       str match {
-        case Loc(path, row, col) => 
+        case Loc(path, row, col) =>
           Return(new Loc(path, row, col))
         case _ => Throw(new Exception(s"invalid location $str"))
       }
+    }
+  }
+
+  implicit def toTryConvertable[A](opt: Option[A]): TryConvertable[A] =
+    new TryConvertable(opt)
+
+  class TryConvertable[A](opt: Option[A]) {
+    def toTry(e: Throwable): Try[A] = opt match {
+      case Some(x) => Return(x)
+      case None => Throw(e)
     }
   }
 

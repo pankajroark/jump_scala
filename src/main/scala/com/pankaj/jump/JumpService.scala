@@ -13,7 +13,8 @@ import com.pankaj.jump.fs.RootsTracker
 import java.net.URLDecoder
 
 class JumpService(
-  rootsTracker: RootsTracker
+  rootsTracker: RootsTracker,
+  jumpHandler: JumpHandler
 ) extends Service[HttpRequest, HttpResponse] {
 
   val UTF8 = "UTF-8"
@@ -37,7 +38,7 @@ class JumpService(
       case Root / "add_root" =>
         Future {
           request.params.get("root") match {
-            case Some(path) => 
+            case Some(path) =>
               // todo return 400 in case root could not be added
               okResponse(rootsTracker.track(path).toString)
             case _ => NotFound
@@ -46,6 +47,19 @@ class JumpService(
 
       case Root / "roots" =>
         Future { okResponse(rootsTracker.roots.mkString("\n")) }
+
+      case Root/ "jump" =>
+        val params = request.params
+        Future.const(for {
+          symbol <- params.get("symbol").toTry(new Exception("symbol not supplied"))
+          file <- params.get("file").toTry(new Exception("file not supplied"))
+          row <- params.get("row").toTry(new Exception("row not supplied")) map (_.toInt)
+          col <- params.get("col").toTry(new Exception("col not supplied")) map (_.toInt)
+          jumpResult <- jumpHandler.jump(symbol, file, row, col)
+        } yield {
+          okResponse(jumpResult)
+        })
+
       case _ => Future{NotFound}
     }
 

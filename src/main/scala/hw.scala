@@ -5,7 +5,7 @@ import com.twitter.conversions.time._
 import java.net.InetSocketAddress
 import java.util.concurrent.ConcurrentLinkedQueue
 import org.jboss.netty.handler.codec.http._
-import com.pankaj.jump.{JumpService, Path}
+import com.pankaj.jump.{JumpDecider, JumpHandler, JumpService, Path}
 import com.pankaj.jump.parser.{Parser, ParseWorkerThread}
 import com.pankaj.jump.fs.{DirtFinder, DiskCrawler, RootsTracker}
 import com.pankaj.jump.db.{Db, FileTable, RootsTable, SymbolTable}
@@ -39,7 +39,9 @@ object Hi {
       }
     }
 
-    val jumpService = new JumpService(rootsTracker)
+    val jumpDecider = new JumpDecider
+    val jumpHandler = new JumpHandler(jumpDecider)
+    val jumpService = new JumpService(rootsTracker, jumpHandler)
     val server = Http.serve(":8081", jumpService)
     val parseWorker = new Thread(new ParseWorkerThread(dirtQueue, fileTable, symbolTable))
     parseWorker.start()

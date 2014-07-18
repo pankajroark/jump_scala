@@ -1,11 +1,14 @@
 package com.pankaj.jump
 
 import com.twitter.util.{Return, Throw, Try}
+import com.pankaj.jump.parser.Pos
 import java.io.File
 
-object JumpHandler {
-  def handleJump(locStr: String): Try[String] = {
-    val loc = Loc.parseLoc(locStr)
+class JumpHandler(decider: JumpDecider) {
+  def jump(word: String, file: String, row: Int, col: Int): Try[String] = {
+    val pos = Pos(Path.fromString(file), row, col)
+    // get matching symbols
+    // Feed them to Jump Decider
     Return("")
   }
 
