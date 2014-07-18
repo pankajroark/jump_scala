@@ -54,6 +54,12 @@ class SymbolTable(val db: Db) extends Table {
     JSymbol(rfqn, Pos(path, row, col), typ)
   }
 
+  def symbolsForName(word: String): List[JSymbol] = {
+    query(s"select * from $name where Name=${quote(word)}") { rs =>
+      rowToJSymbol(rs)
+    }
+  }
+
   def printAll() {
     query(s"select * from $name") { rs =>
       println(rowToJSymbol(rs))
