@@ -29,9 +29,7 @@ class FileTable(db: Db) {
     for (stmt <- managed(db.conn.createStatement)) {
       val path = quote(file.toString)
       val stmtStr = s"select * from $name where Path=$path"
-      println(stmtStr)
       val rs = stmt.executeQuery(stmtStr)
-      println(rs)
       return rs.next()
     }
     return false
@@ -61,10 +59,8 @@ class FileTable(db: Db) {
     // check if entry already exists, if so update
     // else create a new entry
     if(fileExists(fileInfo.path)) {
-      println("update")
       updateModStamp(fileInfo)
     } else {
-      println("add")
       addFileWithModStamp(fileInfo)
     }
   }
@@ -77,6 +73,7 @@ class FileTable(db: Db) {
       while(rs.next()) {
         println(" path : " + rs.getString(1))
         println(" mod stamp : " + rs.getLong(2))
+        println(" process stamp : " + rs.getLong(3))
       }
     }
   }

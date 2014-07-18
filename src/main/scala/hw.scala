@@ -7,15 +7,16 @@ import org.jboss.netty.handler.codec.http._
 import com.pankaj.jump.{JumpService, Path}
 import com.pankaj.jump.parser.Parser
 import com.pankaj.jump.fs.{DiskCrawler, RootsTracker}
-import com.pankaj.jump.db.Db
-import com.pankaj.jump.db.FileTable
+import com.pankaj.jump.db.{Db, FileTable, RootsTable}
 
 object Hi {
   def main(args:Array[String]): Unit = {
     val db = new Db
     val fileTable = new FileTable(db)
     fileTable.ensureExists()
-    val rootsTracker = new RootsTracker
+    val rootsTable = new RootsTable(db)
+    rootsTable.ensureExists()
+    val rootsTracker = new RootsTracker(rootsTable)
     val diskCrawler = new DiskCrawler(rootsTracker, fileTable)
     val timer = new ScheduledThreadPoolTimer()
     // todo add a command line option for this
@@ -23,8 +24,9 @@ object Hi {
       try {
         diskCrawler.crawl()
         fileTable.printFiles()
+        rootsTable.printRoots()
       } catch {
-        case e =>
+        case e: Throwable =>
           println("error")
           e.printStackTrace
       }
