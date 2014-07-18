@@ -6,7 +6,7 @@ import java.net.InetSocketAddress
 import java.util.concurrent.ConcurrentLinkedQueue
 import org.jboss.netty.handler.codec.http._
 import com.pankaj.jump.{JumpService, Path}
-import com.pankaj.jump.parser.Parser
+import com.pankaj.jump.parser.{Parser, ParseWorkerThread}
 import com.pankaj.jump.fs.{DirtFinder, DiskCrawler, RootsTracker}
 import com.pankaj.jump.db.{Db, FileTable, RootsTable}
 
@@ -38,6 +38,9 @@ object Hi {
 
     val jumpService = new JumpService(rootsTracker)
     val server = Http.serve(":8081", jumpService)
+    val parseWorker = new Thread(new ParseWorkerThread(dirtQueue))
+    parseWorker.start()
+
     /*
     val file: Path = "/Users/pankajg/workspace/bc3/finagle/finagle-core/src/main/scala/com/twitter/finagle/Context.scala"
     println(Parser.parse(file).mkString("\n"))

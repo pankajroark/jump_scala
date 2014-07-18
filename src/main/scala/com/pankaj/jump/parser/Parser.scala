@@ -50,7 +50,7 @@ object Parser {
     Pos(pos.source.path, pos.line, pos.column)
 
 
-  def tx(tree: Tree, namespace: List[String] = Nil): List[JSymbol] = tree match {
+  private def tx(tree: Tree, namespace: List[String] = Nil): List[JSymbol] = tree match {
     case p:PackageDef => 
       //println(s"package ${p.pid.name} :: ${p.pid.qualifier}")
       val ns = packagePidToNamespace(p.pid)
