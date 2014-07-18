@@ -4,49 +4,22 @@ import resource._
 import com.pankaj.jump.fs.FileInfo
 import com.pankaj.jump.Path
 
-class RootsTable(db: Db) {
+class RootsTable(val db: Db) extends Table {
   val name = "ROOTS_TABLE"
 
-  def ensureExists() {
-    if (!db.tables.contains(name)) {
-      val createString = s"create table $name(" +
-        "Path varchar(1024) not null PRIMARY KEY, " +
-        "CreationTime bigint not null" +
-        ")"
-
-      for (stmt <- managed(db.conn.createStatement)) {
-        stmt.executeUpdate(createString)
-      }
-      println(s"$name table created")
-    } else {
-      println(s"$name table already exists")
-    }
-  }
-
-  def quote(s: String): String = "'" + s + "'"
-
+  val createString = s"create table $name(" +
+    "Path varchar(1024) not null PRIMARY KEY, " +
+    "CreationTime bigint not null" +
+    ")"
 
   def addRoot(path: Path) = {
-    for (stmt <- managed(db.conn.createStatement)) {
-      val root = quote(path.toString)
-      val ts = System.currentTimeMillis
-      val stmtStr = s"insert into $name values($root, $ts)"
-      stmt.executeUpdate(stmtStr)
-    }
+    val root = quote(path.toString)
+    val ts = System.currentTimeMillis
+    update(s"insert into $name values($root, $ts)")
   }
 
-  def getRoots(): List[String] = {
-    for (stmt <- managed(db.conn.createStatement)) {
-      val stmtStr = s"SELECT Path FROM $name"
-      val rs = stmt.executeQuery(stmtStr)
-      var roots = List[String]()
-      while(rs.next()) {
-        roots = rs.getString(1) :: roots
-      }
-      return roots
-    }
-    Nil
-  }
+  def getRoots(): List[String] =
+    query(s"SELECT Path FROM $name")(rs => rs.getString(1))
 
   // mainly for debugging
   def printRoots() {

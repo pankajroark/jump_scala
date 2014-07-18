@@ -21,18 +21,25 @@ trait Table {
 
   def quote(s: String): String = "'" + s + "'"
 
-  def query[A](q: String)(f: ResultSet => A): Option[A] = {
+  val identity: ResultSet => ResultSet = x => x
+
+  // only read from rs, don't mutate, e.g. don't do next on it
+  def query[A](q: String)(f: ResultSet => A): List[A] = {
     for (stmt <- managed(db.conn.createStatement)) {
       val rs = stmt.executeQuery(q)
-      return Some(f(rs))
+      var result = List[A]()
+      while(rs.next()) {
+        result = f(rs) :: result
+      }
+      return result.reverse
     }
-    None
+    Nil
   }
 
   def queryHasResults(q: String): Boolean = {
-    (query(q) { _.next() }) match {
-      case Some(b) => b
-      case None => false
+    (query(q)(identity)) match {
+      case Nil => false
+      case _ => true
     }
   }
 
