@@ -8,15 +8,17 @@ import org.jboss.netty.handler.codec.http._
 import com.pankaj.jump.{JumpService, Path}
 import com.pankaj.jump.parser.{Parser, ParseWorkerThread}
 import com.pankaj.jump.fs.{DirtFinder, DiskCrawler, RootsTracker}
-import com.pankaj.jump.db.{Db, FileTable, RootsTable}
+import com.pankaj.jump.db.{Db, FileTable, RootsTable, SymbolTable}
 
 object Hi {
   def main(args:Array[String]): Unit = {
     val db = new Db
     val fileTable = new FileTable(db)
-    fileTable.ensureExists()
     val rootsTable = new RootsTable(db)
+    val symbolTable = new SymbolTable(db)
+    fileTable.ensureExists()
     rootsTable.ensureExists()
+    symbolTable.ensureExists()
     val rootsTracker = new RootsTracker(rootsTable)
     val diskCrawler = new DiskCrawler(rootsTracker, fileTable)
     val dirtQueue = new ConcurrentLinkedQueue[Path]

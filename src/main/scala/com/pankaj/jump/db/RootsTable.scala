@@ -1,7 +1,5 @@
 package com.pankaj.jump.db
 
-import resource._
-import com.pankaj.jump.fs.FileInfo
 import com.pankaj.jump.Path
 
 class RootsTable(val db: Db) extends Table {
