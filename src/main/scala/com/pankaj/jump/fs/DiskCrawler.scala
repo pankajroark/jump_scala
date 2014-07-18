@@ -1,6 +1,7 @@
 package com.pankaj.jump.fs
 
 import com.pankaj.jump.Path
+import com.pankaj.jump.db.FileTable
 import java.io.File
 
 case class FileInfo(path: Path, modStamp: Long)
@@ -9,21 +10,23 @@ case class FileInfo(path: Path, modStamp: Long)
 // in File table
 // Only look for java/scala files
 // Need to use some kind of periodic task runner
-class DiskCrawler(rootsTracker: RootsTracker) {
+class DiskCrawler(rootsTracker: RootsTracker, fileTable: FileTable) {
   def crawl() {
     println("crawl")
     val roots = rootsTracker.roots
     roots foreach { root =>
-      crawl(root, isJavaOrScalaFile _){ fi => 
+      crawl(root, isJavaOrScalaFile _){ fi =>
         // todo use log here instead of println
         //println(fi.path)
         //println(fi.modStamp)
-        // todo insert into the dirst queue here
-      } 
+        // todo insert into File Table here
+        fileTable.addOrUpdateFileWithModStamp(fi)
+        //println(fi.path)
+      }
     }
   }
 
-  def isJavaOrScalaFile(f: File): Boolean = 
+  def isJavaOrScalaFile(f: File): Boolean =
     f.isFile && {
       val ext = f.getName.split('.').last
       ext == "scala" || ext == "java"

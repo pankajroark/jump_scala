@@ -10,7 +10,9 @@ libraryDependencies ++= Seq(
   "org.scalatest" %% "scalatest" % "2.2.0",
   "org.scala-lang" % "scala-reflect" % "2.10.2",
   "org.scala-lang" % "scala-compiler" % "2.10.2",
-  "org.scala-lang" % "scala-library" % "2.10.2"
+  "org.scala-lang" % "scala-library" % "2.10.2",
+  "com.h2database" % "h2" % "1.4.180",
+  "com.jsuereth" %% "scala-arm" % "1.3"
 )
 
 fork in run := true
