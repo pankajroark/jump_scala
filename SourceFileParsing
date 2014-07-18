@@ -1,0 +1,20 @@
+Source file refers to the file where we are doing the lookup, the file that is open and whose word we want to lookup the definition of.
+
+
+Here's the approach:
+
+Travel down the tree keeping a list of encountered imports at each stage.
+Also keep track of the package as we go along.
+At each stage we can find exactly the child to look into because of the location. We can eliminate the locations that the symbol can't fall into.
+If the looked up symbol is type things are simpler. 
+  - Lookup the symbol in the imports, taking care of renames. Keep accumulating the wildcards
+  - Take the package and add that to the import wildcard
+  - Go through the available matches and see if wildcard fixed part + symbol name is present
+  - If not then just find the symbol that has the longest matching prefix to any of the wild cards
+
+If the looked up symbol is a val or def and if it is inside a term things get complex.
+  //- We'll need to find the root of the term instead of the actual word and then find it's type. Finding the type is where things get complex.
+  //- Need to think more about it
+
+What about qualified Types?
+Right now just go by the best match approach. We can special handle it later.

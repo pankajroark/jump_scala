@@ -28,7 +28,7 @@ object Parser {
 
   import global._
 
-  def parse(file: Path): List[JSymbol] = {
+  def astForFile(file: Path): Tree = {
     val run = new Run
     val filename = file.toString
     val parser = new syntaxAnalyzer.UnitParser(
@@ -36,7 +36,19 @@ object Parser {
         new BatchSourceFile(filename, Source.fromFile(filename).mkString)
       )
     )
-    val tree = parser.parse()
+    parser.parse()
+  }
+
+  /*
+  def trackDownSymbol(los: Pos): (List[Import], List[PackageDef]) = {
+    @tailrec
+    def go(tree: Tree, imports: List[Import], packages: List[PackageDef]): (List[Import], List[PackageDef]) = {
+    }
+  }
+  */
+
+  def listSymbols(file: Path): List[JSymbol] = {
+    val tree = astForFile(file)
     tx(tree)
   }
   // list of first elements in the tree
