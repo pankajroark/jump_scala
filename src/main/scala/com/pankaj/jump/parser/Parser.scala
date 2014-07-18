@@ -27,13 +27,24 @@ object Parser {
 
   import global._
 
+  def parse(file: Path): List[JSymbol] = {
+    val run = new Run
+    val filename = file.toString
+    val parser = new syntaxAnalyzer.UnitParser(
+      new CompilationUnit(
+        new BatchSourceFile(filename, Source.fromFile(filename).mkString)
+      )
+    )
+    val tree = parser.parse()
+    tx(tree)
+  }
   // list of first elements in the tree
   // Meant for the case where tree really is a list
   private def treeToList(tree: Tree): List[String] = {
     @tailrec
     def go(tree: Tree, ls: List[String]): List[String] = {
       tree match {
-        case n: NameTree  => 
+        case n: NameTree  =>
           if (!tree.children.isEmpty)
             go(tree.children.head, n.name.toString :: ls)
           else n.name.toString :: ls
@@ -51,7 +62,7 @@ object Parser {
 
 
   private def tx(tree: Tree, namespace: List[String] = Nil): List[JSymbol] = tree match {
-    case p:PackageDef => 
+    case p:PackageDef =>
       //println(s"package ${p.pid.name} :: ${p.pid.qualifier}")
       val ns = packagePidToNamespace(p.pid)
       p.stats.flatMap{tx(_, ns)}
@@ -75,20 +86,10 @@ object Parser {
       //println(s"position ${v.pos}")
       List(JSymbol(ns, positionToPos(v.pos), "val"))
 
-    case _ => 
+    case _ =>
       //println("unknown")
       Nil
   }
 
-  def parse(file: Path): List[JSymbol] = {
-    val run = new Run
-    val filename = file.toString
-    val parser = new syntaxAnalyzer.UnitParser(
-      new CompilationUnit(
-        new BatchSourceFile(filename, Source.fromFile(filename).mkString)
-      )
-    )
-    val tree = parser.parse()
-    tx(tree)
-  }
+
 }

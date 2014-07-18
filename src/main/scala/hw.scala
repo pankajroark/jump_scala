@@ -40,7 +40,7 @@ object Hi {
 
     val jumpService = new JumpService(rootsTracker)
     val server = Http.serve(":8081", jumpService)
-    val parseWorker = new Thread(new ParseWorkerThread(dirtQueue))
+    val parseWorker = new Thread(new ParseWorkerThread(dirtQueue, symbolTable))
     parseWorker.start()
 
     /*

@@ -1,6 +1,7 @@
 package com.pankaj.jump.db
 
 import com.pankaj.jump.Path
+import com.pankaj.jump.parser.JSymbol
 
 class SymbolTable(val db: Db) extends Table {
   val name = "SYMBOL_TABLE"
@@ -15,6 +16,9 @@ class SymbolTable(val db: Db) extends Table {
     "Row int not null, " +
     "Col int not null" +
     ")"
+
+  // todo implement this
+  def addSymbol(symbol: JSymbol) = {}
 
 }
 
