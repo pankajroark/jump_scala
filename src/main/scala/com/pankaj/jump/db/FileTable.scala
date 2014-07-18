@@ -65,16 +65,22 @@ class FileTable(db: Db) {
     }
   }
 
+  // Returns a stream of results
+  // todo figure out stream close mechanism:
+  // how do we make sure the underlying result set
+  // is closed?
+  def allFiles: Stream[(FileInfo, Long)] = {
+    val stmt = db.conn.createStatement
+    val stmtStr = s"SELECT * FROM $name"
+    val rs = stmt.executeQuery(stmtStr)
+    (new Iterator[(FileInfo, Long)] {
+      def hasNext = rs.next()
+      def next() = (FileInfo(rs.getString(1), rs.getLong(2)), rs.getLong(3))
+    }).toStream
+  }
+
   // mainly for debugging
   def printFiles() {
-    for (stmt <- managed(db.conn.createStatement)) {
-      val stmtStr = s"SELECT * FROM $name"
-      val rs = stmt.executeQuery(stmtStr)
-      while(rs.next()) {
-        println(" path : " + rs.getString(1))
-        println(" mod stamp : " + rs.getLong(2))
-        println(" process stamp : " + rs.getLong(3))
-      }
-    }
+    allFiles.toList.map(println _)
   }
 }

@@ -3,10 +3,11 @@ import com.twitter.util.{Await, Future}
 import com.twitter.util.ScheduledThreadPoolTimer
 import com.twitter.conversions.time._
 import java.net.InetSocketAddress
+import java.util.concurrent.ConcurrentLinkedQueue
 import org.jboss.netty.handler.codec.http._
 import com.pankaj.jump.{JumpService, Path}
 import com.pankaj.jump.parser.Parser
-import com.pankaj.jump.fs.{DiskCrawler, RootsTracker}
+import com.pankaj.jump.fs.{DirtFinder, DiskCrawler, RootsTracker}
 import com.pankaj.jump.db.{Db, FileTable, RootsTable}
 
 object Hi {
@@ -18,13 +19,16 @@ object Hi {
     rootsTable.ensureExists()
     val rootsTracker = new RootsTracker(rootsTable)
     val diskCrawler = new DiskCrawler(rootsTracker, fileTable)
+    val dirtQueue = new ConcurrentLinkedQueue[Path]
+    val dirtFinder = new DirtFinder(fileTable, dirtQueue)
     val timer = new ScheduledThreadPoolTimer()
     // todo add a command line option for this
     timer.schedule(5.seconds) {
       try {
         diskCrawler.crawl()
-        fileTable.printFiles()
-        rootsTable.printRoots()
+        //fileTable.printFiles()
+        //rootsTable.printRoots()
+        dirtFinder.run()
       } catch {
         case e: Throwable =>
           println("error")
