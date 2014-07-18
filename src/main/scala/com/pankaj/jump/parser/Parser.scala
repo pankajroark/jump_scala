@@ -15,6 +15,7 @@ case class Pos(file: Path, row: Int, col: Int)
 // JSymbol stands for Jump Symbol, longer name to avoid confusion with global.Symbol
 case class JSymbol(rfqn: List[String], loc: Pos, typ: String) {
   def name = rfqn.head
+  def qualName = rfqn.reverse.mkString(".")
 }
 
 // Parser parses a single file

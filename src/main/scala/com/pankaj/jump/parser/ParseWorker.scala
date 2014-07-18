@@ -2,11 +2,27 @@ package com.pankaj.jump.parser
 
 import java.util.concurrent.ConcurrentLinkedQueue
 import com.pankaj.jump.Path
-import com.pankaj.jump.db.SymbolTable
+import com.pankaj.jump.db.{FileTable, SymbolTable}
+import com.pankaj.jump.fs.FileInfo
 
 // ParserWorker reads dirty files from the dirt queue, parses them and inserts
 // qualified symbols in the Symbol table
-class ParseWorkerThread(dirtQueue: ConcurrentLinkedQueue[Path], symbolTable: SymbolTable) extends Runnable {
+class ParseWorkerThread(
+  dirtQueue: ConcurrentLinkedQueue[Path],
+  fileTable: FileTable,
+  symbolTable: SymbolTable
+) extends Runnable {
+
+  def processFile(file: Path) = {
+    val symbols = Parser.parse(file)
+    symbols.foreach { symbolTable.addSymbol(_) }
+  }
+
+  def fileNeedsProcessing(file: Path): Boolean =
+    fileTable.fileInfo(file) match {
+      case Some((FileInfo(_, modTs), procTs)) if modTs < procTs => false
+      case _ => true
+    }
 
   def run(): Unit = {
     while(true) {
@@ -16,7 +32,7 @@ class ParseWorkerThread(dirtQueue: ConcurrentLinkedQueue[Path], symbolTable: Sym
       } else {
         // First, check if the file still needs processing
         // Second, parse file and insert symbols in symbol table
-        println(Parser.parse(file))
+        if(fileNeedsProcessing(file)) processFile(file)
       }
     }
   }

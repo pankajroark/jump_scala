@@ -31,6 +31,7 @@ object Hi {
         //fileTable.printFiles()
         //rootsTable.printRoots()
         dirtFinder.run()
+        symbolTable.printAll()
       } catch {
         case e: Throwable =>
           println("error")
@@ -40,7 +41,7 @@ object Hi {
 
     val jumpService = new JumpService(rootsTracker)
     val server = Http.serve(":8081", jumpService)
-    val parseWorker = new Thread(new ParseWorkerThread(dirtQueue, symbolTable))
+    val parseWorker = new Thread(new ParseWorkerThread(dirtQueue, fileTable, symbolTable))
     parseWorker.start()
 
     /*

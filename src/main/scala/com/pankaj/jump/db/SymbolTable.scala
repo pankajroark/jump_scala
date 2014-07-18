@@ -3,6 +3,7 @@ package com.pankaj.jump.db
 import com.pankaj.jump.Path
 import com.pankaj.jump.parser.JSymbol
 
+// todo set up indices for name and filepath
 class SymbolTable(val db: Db) extends Table {
   val name = "SYMBOL_TABLE"
 
@@ -18,7 +19,24 @@ class SymbolTable(val db: Db) extends Table {
     ")"
 
   // todo implement this
-  def addSymbol(symbol: JSymbol) = {}
+  def addSymbol(s: JSymbol) = {
+    val symName = quote(s.name)
+    val qName = quote(s.qualName)
+    val file = quote(s.loc.file.toString)
+    val typ = quote(s.typ)
+    val row = s.loc.row
+    val col = s.loc.col
+    update(s"insert into $name values(" +
+      s"null, $symName, $qName, $file, $typ, $row, $col" +
+      ")"
+    )
+  }
+
+  def printAll() {
+    query(s"select * from $name") { rs =>
+      println(rs)
+    }
+  }
 
 }
 

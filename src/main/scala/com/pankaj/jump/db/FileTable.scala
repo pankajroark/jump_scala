@@ -19,6 +19,13 @@ class FileTable(val db: Db) extends Table {
     queryHasResults(s"select * from $name where Path=$path")
   }
 
+  def fileInfo(file: Path): Option[(FileInfo, Long)] = {
+    val path = quote(file.toString)
+    (query(s"select * from $name where Path=$path") { rs =>
+      (FileInfo(rs.getString(1), rs.getLong(2)), rs.getLong(3))
+    }).headOption
+  }
+
   def addFileWithModStamp(fileInfo: FileInfo) = {
     val file = quote(fileInfo.path.toString)
     val modStamp = fileInfo.modStamp.toString
