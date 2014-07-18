@@ -10,7 +10,7 @@ class FileTable(val db: Db) extends Table {
   val createString = s"create table $name(" +
     "Path varchar(1024) not null PRIMARY KEY, " +
     "ModStamp bigint not null, " +
-    "ProcessStamp int, " +
+    "ProcessStamp bigint, " +
      "Imports varchar(60000)" +
     ")"
 
@@ -30,6 +30,11 @@ class FileTable(val db: Db) extends Table {
     val file = quote(fileInfo.path.toString)
     val modStamp = fileInfo.modStamp.toString
     update(s"insert into $name (Path, ModStamp, ProcessStamp) values ($file, $modStamp, 0)")
+  }
+
+  def updateProcessStamp(path: Path, procTs: Long) = {
+    val file = quote(path.toString)
+    update(s"update $name set ProcessStamp=$procTs where Path=$file")
   }
 
   def updateModStamp(fileInfo: FileInfo) = {

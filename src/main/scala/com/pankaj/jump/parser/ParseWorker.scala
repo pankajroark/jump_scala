@@ -14,8 +14,12 @@ class ParseWorkerThread(
 ) extends Runnable {
 
   def processFile(file: Path) = {
+    println(s"processing ${file.toString}")
+    val procTs = System.currentTimeMillis
     val symbols = Parser.parse(file)
     symbols.foreach { symbolTable.addSymbol(_) }
+    fileTable.updateProcessStamp(file, procTs)
+    // Mark processed in filetable
   }
 
   def fileNeedsProcessing(file: Path): Boolean =

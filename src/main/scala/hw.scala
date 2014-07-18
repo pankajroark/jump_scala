@@ -31,7 +31,7 @@ object Hi {
         //fileTable.printFiles()
         //rootsTable.printRoots()
         dirtFinder.run()
-        symbolTable.printAll()
+        //symbolTable.printAll()
       } catch {
         case e: Throwable =>
           println("error")

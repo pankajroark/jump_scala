@@ -1,7 +1,8 @@
 package com.pankaj.jump.db
 
 import com.pankaj.jump.Path
-import com.pankaj.jump.parser.JSymbol
+import com.pankaj.jump.parser.{Pos, JSymbol}
+import java.sql.ResultSet
 
 // todo set up indices for name and filepath
 class SymbolTable(val db: Db) extends Table {
@@ -32,9 +33,20 @@ class SymbolTable(val db: Db) extends Table {
     )
   }
 
+  def rowToJSymbol(rs: ResultSet): JSymbol = {
+    val qname = rs.getString("QualName")
+    val rfqn = qname.split('.').reverse.toList
+    val file = rs.getString("FilePath")
+    val path = Path.fromString(file)
+    val row = rs.getInt("Row")
+    val col = rs.getInt("Col")
+    val typ = rs.getString("Type")
+    JSymbol(rfqn, Pos(path, row, col), typ)
+  }
+
   def printAll() {
     query(s"select * from $name") { rs =>
-      println(rs)
+      println(rowToJSymbol(rs))
     }
   }
 
