@@ -7,15 +7,43 @@ trait Table {
   val db: Db
   val name: String
   val createString: String
+  type IndexName = String
+  val indexInfo: Map[IndexName, List[String]] = Map()
+
+  def setUp() = {
+    ensureExists()
+    ensureIndicesExist()
+  }
 
   def ensureExists() = {
     if (!db.tables.contains(name)) {
-      for (stmt <- managed(db.conn.createStatement)) {
-        stmt.executeUpdate(createString)
-      }
+      update(createString)
       println(s"$name table created")
     } else {
       println(s"$name table already exists")
+    }
+  }
+
+  def existingIndices(): List[String] = {
+    val rs = db.metadata.getIndexInfo(null, null, name, false, false)
+    var indices = List[String]()
+    while(rs.next()) {
+      indices = rs.getString("INDEX_NAME") :: indices
+    }
+    indices
+  }
+
+  def ensureIndicesExist() {
+    val curIndices = existingIndices()
+    for ( (indexName, cols) <- indexInfo) {
+      if (!curIndices.contains(indexName)) {
+        val colsStr = cols.mkString("(", ",", ")")
+        val createStr = s"create index $indexName on $name $colsStr"
+        update(createStr)
+        println(s"create index $indexName on table $name")
+      } else {
+        println(s"index $indexName already exists on table $name")
+      }
     }
   }
 

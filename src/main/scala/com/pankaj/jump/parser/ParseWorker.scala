@@ -15,6 +15,8 @@ class ParseWorkerThread(
 
   def processFile(file: Path) = {
     println(s"processing ${file.toString}")
+    // remove existing entries from Symbol Table
+    symbolTable.deleteSymbolsForFile(file)
     val procTs = System.currentTimeMillis
     val symbols = Parser.parse(file)
     symbols.foreach { symbolTable.addSymbol(_) }

@@ -19,6 +19,11 @@ class SymbolTable(val db: Db) extends Table {
     "Col int not null" +
     ")"
 
+  override val indexInfo = Map(
+    "PATH_INDEX" -> List("FilePath"),
+    "NAME_INDEX" -> List("Name")
+  )
+
   // todo implement this
   def addSymbol(s: JSymbol) = {
     val symName = quote(s.name)
@@ -31,6 +36,11 @@ class SymbolTable(val db: Db) extends Table {
       s"null, $symName, $qName, $file, $typ, $row, $col" +
       ")"
     )
+  }
+
+  def deleteSymbolsForFile(path: Path) = {
+    val file = quote(path.toString)
+    update(s"delete from $name where FilePath=$file")
   }
 
   def rowToJSymbol(rs: ResultSet): JSymbol = {

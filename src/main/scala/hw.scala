@@ -16,9 +16,9 @@ object Hi {
     val fileTable = new FileTable(db)
     val rootsTable = new RootsTable(db)
     val symbolTable = new SymbolTable(db)
-    fileTable.ensureExists()
-    rootsTable.ensureExists()
-    symbolTable.ensureExists()
+    fileTable.setUp()
+    rootsTable.setUp()
+    symbolTable.setUp()
     val rootsTracker = new RootsTracker(rootsTable)
     val diskCrawler = new DiskCrawler(rootsTracker, fileTable)
     val dirtQueue = new ConcurrentLinkedQueue[Path]

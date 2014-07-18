@@ -1,6 +1,6 @@
 package com.pankaj.jump.db
 
-import java.sql.DriverManager
+import java.sql.{DatabaseMetaData, DriverManager}
 
 // Manages the jdbc connection to database
 class Db {
@@ -10,10 +10,11 @@ class Db {
 
   val conn = DriverManager.getConnection(s"jdbc:h2:~/$name", "sa", "")
 
+  lazy val metadata: DatabaseMetaData = conn.getMetaData
+
   lazy val tables = {
     var ts = List[String]()
-    val meta = conn.getMetaData()
-    val result = meta.getTables(null, null, null, null)
+    val result = metadata.getTables(null, null, null, null)
     while(result.next()) {
       ts = result.getString(3) :: ts
     }
