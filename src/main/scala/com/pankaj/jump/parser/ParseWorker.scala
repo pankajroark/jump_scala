@@ -10,7 +10,8 @@ import com.pankaj.jump.fs.FileInfo
 class ParseWorkerThread(
   dirtQueue: ConcurrentLinkedQueue[Path],
   fileTable: FileTable,
-  symbolTable: SymbolTable
+  symbolTable: SymbolTable,
+  parser: Parser
 ) extends Runnable {
 
   def processFile(file: Path) = {
@@ -18,7 +19,7 @@ class ParseWorkerThread(
     // remove existing entries from Symbol Table
     symbolTable.deleteSymbolsForFile(file)
     val procTs = System.currentTimeMillis
-    val symbols = Parser.listSymbols(file)
+    val symbols = parser.listSymbols(file)
     symbols.foreach { symbolTable.addSymbol(_) }
     fileTable.updateProcessStamp(file, procTs)
     // Mark processed in filetable

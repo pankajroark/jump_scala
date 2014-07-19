@@ -14,7 +14,7 @@ A simple ArrayBlockingQueue that contains the dirty files as provided by DirtFin
 
 
 *Symbol Table* contains the following:
-Unique Id | name | qualified name | file | type | row | col
+Unique Id | name | qualified name | file | type | row | col | ProjectRoot
 
 Secondary indices on name, file
 
@@ -43,3 +43,4 @@ Mark the file at given path as dirty. Just update the file table directly.
 *Cache* (Optional)
 We may want to cache recently/frequently looked up symbols in memory.
 
+Add support for adding project root with symbol to constrain searches better.

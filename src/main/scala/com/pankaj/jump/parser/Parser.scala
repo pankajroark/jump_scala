@@ -19,7 +19,7 @@ case class JSymbol(rfqn: List[String], loc: Pos, typ: String) {
 }
 
 // Parser parses a single file
-object Parser {
+class Parser {
 
   val settings = new Settings
   settings processArgumentString "-usejavacp"
@@ -39,13 +39,48 @@ object Parser {
     parser.parse()
   }
 
-  /*
-  def trackDownSymbol(los: Pos): (List[Import], List[PackageDef]) = {
-    @tailrec
-    def go(tree: Tree, imports: List[Import], packages: List[PackageDef]): (List[Import], List[PackageDef]) = {
+  def trackDownSymbol(word: String, loc: Pos): (List[Import], List[PackageDef]) = {
+    val tree = astForFile(loc.file)
+    //@tailrec
+    def go(
+      tree: Tree,
+      imports: List[Import],
+      packages: List[PackageDef],
+      found: Boolean
+    ): (List[Import], List[PackageDef], Boolean) = {
+      def wordInside(symbolPosition: Position): Boolean = {
+        symbolPosition.line == loc.row &&
+        symbolPosition.column < loc.col &&
+        symbolPosition.column + word.size >= loc.col
+      }
+
+      def findMatchingChild(children: List[Tree]) {
+      }
+      tree match  {
+        case i: Import =>
+          (i :: imports, packages, false)
+
+        case p: PackageDef =>
+          println(p.pos)
+          // todo need to recurse in the tree here as well
+          (imports, p :: packages, false)
+
+        case entity: NameTree =>
+          println(s" name -> ${entity.name}")
+          println(entity)
+          println(entity.pos)
+          if (wordInside(entity.pos)) {
+            (imports, packages, true)
+          } else {
+            (Nil, Nil, false)
+          }
+        case _ =>
+          (Nil, Nil, false)
+      }
     }
+    val (is, ps, found) = go(tree, Nil, Nil, false)
+    (is, ps)
   }
-  */
 
   def listSymbols(file: Path): List[JSymbol] = {
     val tree = astForFile(file)

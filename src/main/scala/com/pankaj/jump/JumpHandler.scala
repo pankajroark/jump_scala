@@ -9,6 +9,7 @@ class JumpHandler(decider: JumpDecider, symbolTable: SymbolTable) {
   def jump(word: String, file: String, row: Int, col: Int): Try[String] = {
     val pos = Pos(Path.fromString(file), row, col)
     val choices = symbolTable.symbolsForName(word)
+    println(choices)
     // Feed them to Jump Decider
     decider.choose(word, pos, choices) match {
       case Some(symbol) => Return(symbol.loc.toString)

@@ -12,6 +12,7 @@ import com.pankaj.jump.db.{Db, FileTable, RootsTable, SymbolTable}
 
 object Hi {
   def main(args:Array[String]): Unit = {
+    val parser = new Parser
     val db = new Db
     val fileTable = new FileTable(db)
     val rootsTable = new RootsTable(db)
@@ -39,11 +40,12 @@ object Hi {
       }
     }
 
-    val jumpDecider = new JumpDecider
+    val jumpDecider = new JumpDecider(parser)
     val jumpHandler = new JumpHandler(jumpDecider, symbolTable)
     val jumpService = new JumpService(rootsTracker, jumpHandler)
     val server = Http.serve(":8081", jumpService)
-    val parseWorker = new Thread(new ParseWorkerThread(dirtQueue, fileTable, symbolTable))
+    val parseWorkerThread = new ParseWorkerThread(dirtQueue, fileTable, symbolTable, parser)
+    val parseWorker = new Thread(parseWorkerThread)
     parseWorker.start()
 
     /*
