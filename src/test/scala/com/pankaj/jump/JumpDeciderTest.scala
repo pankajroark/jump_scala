@@ -13,6 +13,17 @@ import java.io.{File, PrintWriter}
 
 class JumpDeciderSpec extends FlatSpec with Matchers {
 
+  def getJDForContent(content: String): (JumpDecider, Path) = {
+    val temp = File.createTempFile("temp",".scala");
+    temp.deleteOnExit()
+    val pw = new PrintWriter(temp)
+    pw.print(content.stripMargin)
+    pw.close()
+    val path: Path = Path.fromString(temp.getPath)
+    val parser = new Parser
+    (new JumpDecider(parser), path)
+  }
+
   "parser" should "track down symbol correctly" in {
     val content = """
     |package com
@@ -27,15 +38,30 @@ class JumpDeciderSpec extends FlatSpec with Matchers {
     |  }
     |}
     """
-    val temp = File.createTempFile("temp",".scala");
-    val pw = new PrintWriter(temp)
-    pw.print(content.stripMargin)
-    pw.close()
-    val path: Path = Path.fromString(temp.getPath)
-    val parser = new Parser
-    val jd = new JumpDecider(parser)
+    val (jd, path) = getJDForContent(content)
     println(jd.choose("Pos", Pos(path, 7, 33), Nil))
-    temp.deleteOnExit()
+  }
+
+  "parser" should "use longest prefix match correctly" in {
+    val content = """
+    |package com.pankaj.jump
+    |
+    |import com.pankaj.jump.parser.{JSymbol, Pos, Parser}
+    |import path.to.link._
+    |
+    |object Test {
+    | val test: MyType
+    |}
+    """
+    val (jd, path) = getJDForContent(content)
+    val wrongOne = JSymbol(List("MyType", "dummy1", "to", "path"), Pos(path, 0, 0), "some")
+    val symbol = JSymbol(List("MyType", "link", "to", "path"), Pos(path, 0, 0), "some")
+    val wrongTwo = JSymbol(List("MyType", "dummy2", "to", "path"), Pos(path, 0, 0), "some")
+
+    // wedging in the middle to avoid being picked up because of head or tail
+    val choices = List(wrongOne, symbol, wrongTwo)
+    val chosen = jd.choose("Pos", Pos(path, 6, 12), choices)
+    assert(chosen === Some(symbol))
   }
 
 }

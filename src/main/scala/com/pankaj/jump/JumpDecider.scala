@@ -6,10 +6,9 @@ import scala.annotation.tailrec
 class JumpDecider(parser: Parser) {
   def choose(word: String, pos: Pos, choices: List[JSymbol]): Option[JSymbol] = {
     val (imports, pkg) = parser.trackDownSymbol(word, pos)
-    println(choices)
-    choices.foreach { x => println(x.qualName)}
 
     def tryFindExactMatch(): Option[JSymbol] = {
+      println("[INFO] tryFindExactMatch called")
       val lookupNames = {
         val importNames = for{
           JImport(qual, name, rename) <- imports
@@ -20,7 +19,6 @@ class JumpDecider(parser: Parser) {
         val packageName = (word :: pkg.reverse).reverse.mkString(".")
         packageName :: importNames
       }
-      println(s"lookup names $lookupNames")
       val matchingSymbols = for {
         lName <- lookupNames
         symbol <- choices
@@ -30,6 +28,7 @@ class JumpDecider(parser: Parser) {
     }
 
     def tryLongestPrefixMatch(): Option[JSymbol] = {
+      println("[INFO] tryLongestPrefixMatch called")
       val quals = {
         val importQuals = {
           for {
@@ -46,7 +45,7 @@ class JumpDecider(parser: Parser) {
         @tailrec
         def go(as: List[String], bs: List[String], count: Int): Int = {
           (as, bs) match {
-            case (p::ps, q::qs) => go(ps, qs, count + 1)
+            case (p::ps, q::qs) if (p == q) => go(ps, qs, count + 1)
             case _ => count
           }
         }
