@@ -18,6 +18,8 @@ case class JSymbol(rfqn: List[String], loc: Pos, typ: String) {
   def qualName = rfqn.reverse.mkString(".")
 }
 
+case class JImport(qual: List[String], name: String, rename: String)
+
 // Parser parses a single file
 class Parser {
 
@@ -39,40 +41,8 @@ class Parser {
     parser.parse()
   }
 
-  // Child where the words falls somewhere inside
-  def findMatchingChild(word: String, loc: Pos, children: List[Tree]): Option[Tree] = {
-    // find the element that is closest and greater
-    var closestGreater:Option[Tree] = None
-    for (elem <- children) {
-      val p = elem.pos
-      // beyond given word
-      if (
-        p.line > loc.row ||
-        p.line == loc.row && p.column >= loc.col
-      ) {
-        closestGreater match {
-          case None =>
-            println(s"choosing $elem")
-            closestGreater = Some(elem)
-          case Some(cg) =>
-            val cgPos = cg.pos
-            // less than current greter
-            if (
-              p.line < cgPos.line ||
-              p.line == cgPos.line && p.column < cgPos.column
-            ) {
-              println(s"choosing $elem")
-              closestGreater = Some(elem)
-            }
-        }
-      }
-    }
-    closestGreater
-  }
-
-
   // @return (Imports, Package)
-  def trackDownSymbol(word: String, loc: Pos): (List[Import], List[String]) = {
+  def trackDownSymbol(word: String, loc: Pos): (List[JImport], List[String]) = {
 
     def wordInside(p: Position): Boolean = {
       p.line == loc.row &&
@@ -129,7 +99,14 @@ class Parser {
       }
     }
     println(packages)
-    (FindWithTrace.imports, packages)
+    val imports = FindWithTrace.imports flatMap { case Import(expr, selectors) =>
+      val qual = treeToList(expr)
+      for (ImportSelector(name, _, rename, _) <- selectors) yield {
+        JImport(qual, name.toString, rename.toString)
+      }
+    }
+    println(imports)
+    (imports, packages)
   }
 
   def listSymbols(file: Path): List[JSymbol] = {
