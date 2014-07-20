@@ -98,14 +98,13 @@ class Parser {
         case _ => acc
       }
     }
-    println(packages)
     val imports = FindWithTrace.imports flatMap { case Import(expr, selectors) =>
       val qual = treeToList(expr)
       for (ImportSelector(name, _, rename, _) <- selectors) yield {
-        JImport(qual, name.toString, rename.toString)
+        val ren = if (rename == null) name else rename
+        JImport(qual, name.toString, ren.toString)
       }
     }
-    println(imports)
     (imports, packages)
   }
 
@@ -138,7 +137,6 @@ class Parser {
 
   private def tx(tree: Tree, namespace: List[String] = Nil): List[JSymbol] = tree match {
     case p:PackageDef =>
-      //println(s"package ${p.pid.name} :: ${p.pid.qualifier}")
       val ns = packagePidToNamespace(p.pid)
       p.stats.flatMap{tx(_, ns)}
 
@@ -146,23 +144,17 @@ class Parser {
       val ns = c.name.toString :: namespace
       // todo handle traits
       val sym = JSymbol(ns, positionToPos(c.pos), "class")
-      //println(sym)
-      //println(s"class ${ns.reverse.mkString(".")}")
       sym :: c.impl.body.flatMap{tx(_, ns)}
 
     case m:ModuleDef =>
       val ns = m.name.toString :: namespace
-      //println(s"object ${ns.reverse.mkString(".")}")
       m.impl.body.flatMap{tx(_, ns)}
 
     case v:ValOrDefDef =>
       val ns = v.name.toString :: namespace
-      //println(s"identifier ${ns.reverse.mkString(".")}")
-      //println(s"position ${v.pos}")
       List(JSymbol(ns, positionToPos(v.pos), "val"))
 
     case _ =>
-      //println("unknown")
       Nil
   }
 
