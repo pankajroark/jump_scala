@@ -15,4 +15,4 @@ libraryDependencies ++= Seq(
   "com.jsuereth" %% "scala-arm" % "1.3"
 )
 
-fork in run := true
+fork := true

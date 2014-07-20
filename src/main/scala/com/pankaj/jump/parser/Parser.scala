@@ -39,47 +39,97 @@ class Parser {
     parser.parse()
   }
 
-  def trackDownSymbol(word: String, loc: Pos): (List[Import], List[PackageDef]) = {
-    val tree = astForFile(loc.file)
-    //@tailrec
-    def go(
-      tree: Tree,
-      imports: List[Import],
-      packages: List[PackageDef],
-      found: Boolean
-    ): (List[Import], List[PackageDef], Boolean) = {
-      def wordInside(symbolPosition: Position): Boolean = {
-        symbolPosition.line == loc.row &&
-        symbolPosition.column < loc.col &&
-        symbolPosition.column + word.size >= loc.col
-      }
-
-      def findMatchingChild(children: List[Tree]) {
-      }
-      tree match  {
-        case i: Import =>
-          (i :: imports, packages, false)
-
-        case p: PackageDef =>
-          println(p.pos)
-          // todo need to recurse in the tree here as well
-          (imports, p :: packages, false)
-
-        case entity: NameTree =>
-          println(s" name -> ${entity.name}")
-          println(entity)
-          println(entity.pos)
-          if (wordInside(entity.pos)) {
-            (imports, packages, true)
-          } else {
-            (Nil, Nil, false)
-          }
-        case _ =>
-          (Nil, Nil, false)
+  // Child where the words falls somewhere inside
+  def findMatchingChild(word: String, loc: Pos, children: List[Tree]): Option[Tree] = {
+    // find the element that is closest and greater
+    var closestGreater:Option[Tree] = None
+    for (elem <- children) {
+      val p = elem.pos
+      // beyond given word
+      if (
+        p.line > loc.row ||
+        p.line == loc.row && p.column >= loc.col
+      ) {
+        closestGreater match {
+          case None =>
+            println(s"choosing $elem")
+            closestGreater = Some(elem)
+          case Some(cg) =>
+            val cgPos = cg.pos
+            // less than current greter
+            if (
+              p.line < cgPos.line ||
+              p.line == cgPos.line && p.column < cgPos.column
+            ) {
+              println(s"choosing $elem")
+              closestGreater = Some(elem)
+            }
+        }
       }
     }
-    val (is, ps, found) = go(tree, Nil, Nil, false)
-    (is, ps)
+    closestGreater
+  }
+
+
+  // @return (Imports, Package)
+  def trackDownSymbol(word: String, loc: Pos): (List[Import], List[String]) = {
+
+    def wordInside(p: Position): Boolean = {
+      p.line == loc.row &&
+      p.column <= loc.col &&
+      p.column + word.size > loc.col
+    }
+
+    object FindWithTrace extends Traverser {
+      import collection.mutable
+      private val _path: mutable.Stack[Tree] = mutable.Stack()
+      private var _trace: List[Tree] = Nil
+      private var _found = false
+      private var _imports: List[Import] = Nil
+
+      def trace: List[Tree] = _trace
+      def imports: List[Import] = _imports
+
+      private def hasLoc(p: Position): Boolean =  {
+        p match {
+          case NoPosition => false
+          case _ =>
+            wordInside(p)
+        }
+      }
+
+      override def traverse(t: Tree) = {
+        if (!_found) {
+          _path push t
+          if(hasLoc(t.pos)) {
+            _found = true
+            _trace = _path.toList
+          } else {
+            try {
+              t match {
+                case i: Import =>
+                  _imports = i :: _imports
+                case _ =>
+              }
+              super.traverse(t)
+            } finally _path.pop()
+          }
+        }
+      }
+    }
+
+    val tree = astForFile(loc.file)
+    FindWithTrace.traverse(tree)
+    val trace = (FindWithTrace.trace)
+    val packages = trace.foldLeft(List[String]()) { (acc, t) =>
+      t match {
+        case PackageDef(pid, stats) =>
+          treeToList(pid.qualifier) ++ List(pid.name.toString) ++ acc
+        case _ => acc
+      }
+    }
+    println(packages)
+    (FindWithTrace.imports, packages)
   }
 
   def listSymbols(file: Path): List[JSymbol] = {
