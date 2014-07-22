@@ -12,7 +12,10 @@ class JumpHandler(decider: JumpDecider, symbolTable: SymbolTable) {
     println(choices)
     // Feed them to Jump Decider
     decider.choose(word, pos, choices) match {
-      case Some(symbol) => Return(symbol.loc.toString)
+      case Some(symbol) =>
+        val l = symbol.loc
+        val locStr = s"${l.file}:${l.row}:${l.col}"
+        Return(locStr)
       case None => Throw(new Exception("No matching locations found"))
     }
   }
