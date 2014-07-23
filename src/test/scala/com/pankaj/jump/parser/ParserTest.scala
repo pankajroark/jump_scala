@@ -12,6 +12,14 @@ import java.io.{File, PrintWriter}
 
 
 class ParserSpec extends FlatSpec with Matchers {
+  def getPathForContent(content: String): Path = {
+    val temp = File.createTempFile("temp",".scala");
+    temp.deleteOnExit()
+    val pw = new PrintWriter(temp)
+    pw.print(content.stripMargin)
+    pw.close()
+    Path.fromString(temp.getPath)
+  }
 
   /*
   "parser" should "track down symbol correctly" in {
@@ -37,7 +45,6 @@ class ParserSpec extends FlatSpec with Matchers {
     println(parser.trackDownSymbol("choose", Pos(path, 7, 7)))
     temp.deleteOnExit()
   }
-  */
 
   "parser" should "track down symbol correctly when wildcard imports" in {
     val content = """
@@ -61,5 +68,31 @@ class ParserSpec extends FlatSpec with Matchers {
     val parser = new Parser
     println(parser.trackDownSymbol("choose", Pos(path, 7, 7)))
     temp.deleteOnExit()
+  }
+  */
+
+  "parser" should "collect symbols correctly" in {
+    val content = """
+    |package test
+    |package a.b
+    |
+    |import d.e.f
+    |
+    |object Outer {
+    |  class Inner(parser: Parser) {
+    |    val v1 = new String
+    |    def func(word: Int) = {
+    |      v1.size
+    |    }
+    |  }
+    |}
+    """
+
+    val path = getPathForContent(content)
+    val parser = new Parser
+    val symbols = parser.listSymbols(path)
+    assert(symbols.exists(_.rfqn == List("Inner", "Outer", "b", "a", "test")) == true)
+    assert(symbols.exists(_.rfqn == List("v1", "Inner", "Outer", "b", "a", "test")) == true)
+    assert(symbols.exists(_.rfqn == List("func", "Inner", "Outer", "b", "a", "test")) == true)
   }
 }

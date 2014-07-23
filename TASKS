@@ -20,6 +20,12 @@ Implement ParseWorker that reads dirty files off the dirtqueue, parses the files
 Add end point for deleting a git root
 Start indexing type definitions as well. Think of others to include.
 Refactor file parser to use traverser.
-Think of how to how to reduce db size.
+Think of how to how to reduce db size. focus on the symbol table.
+  - Instead of file path we could store id of the corresponding entry in file table.
 Think of dot chained symbol lookup.
-Control memory usage of the app.
+Control memory usage of the app. JVM_OPT=-Xmx256m
+Add an end point for marking a file dirty directly. On the vim side call
+  this api whenever a file is saved. Perhaps also when it's opened. We'll
+  verify the timestamps anyway so won't cost much.
+
+More unit tests for everything

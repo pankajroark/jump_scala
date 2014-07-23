@@ -20,15 +20,58 @@ case class JSymbol(rfqn: List[String], loc: Pos, typ: String) {
 
 case class JImport(qual: List[String], name: String, rename: String)
 
-// Parser parses a single file
-class Parser {
-
+object Parser {
   val settings = new Settings
   settings processArgumentString "-usejavacp"
-
   val global = Global(settings, new ConsoleReporter(settings))
 
   import global._
+
+  class SymbolCollector extends Traverser {
+    import collection.mutable
+    private val _path: mutable.Stack[Tree] = mutable.Stack()
+    private var _symbols: List[JSymbol] = Nil
+
+    def symbols: List[JSymbol] = _symbols
+
+    private def namespace(): List[String] = {
+      val partNamess = for (part <- _path.toList if part.isInstanceOf[NameTree]) yield {
+        part match {
+          case p: PackageDef =>
+            packagePidToNamespace(p.pid)
+          case n: NameTree => List(n.name.toString)
+        }
+      }
+      partNamess.flatten
+    }
+
+    private def storeSymbol(t: Tree, typ: String) = {
+      val sym = JSymbol(namespace(), positionToPos(t.pos), typ)
+      _symbols = sym :: _symbols
+    }
+
+    override def traverse(t: Tree) = {
+      _path push t
+      try {
+        t match {
+          case _:ClassDef =>
+            // todo handle traits
+            storeSymbol(t, "class")
+
+          case _:ModuleDef =>
+            storeSymbol(t, "object")
+
+          case _:ValOrDefDef =>
+            storeSymbol(t, "val")
+
+          //todo handle types
+
+          case _ =>
+        }
+        super.traverse(t)
+      } finally _path.pop()
+    }
+  }
 
   def astForFile(file: Path): Tree = {
     val run = new Run
@@ -41,16 +84,44 @@ class Parser {
     parser.parse()
   }
 
+  // list of first elements in the tree
+  // Meant for the case where tree really is a list
+  def treeToList(tree: Tree): List[String] = {
+    @tailrec
+    def go(tree: Tree, ls: List[String]): List[String] = {
+      tree match {
+        case n: NameTree  =>
+          if (!tree.children.isEmpty)
+            go(tree.children.head, n.name.toString :: ls)
+          else n.name.toString :: ls
+        case _ => ls
+      }
+    }
+    go(tree, Nil).reverse
+  }
+
+  def packagePidToNamespace(pid: RefTree): List[String] =
+    pid.name.toString :: treeToList(pid.qualifier)
+
+  def positionToPos(pos: Position): Pos =
+    Pos(pos.source.path, pos.line, pos.column)
+}
+
+// Parser parses a single file
+class Parser {
+  import Parser._
+
+  import global._
+
   // @return (Imports, Package)
   def trackDownSymbol(word: String, loc: Pos): (List[JImport], List[String]) = {
-
     def wordInside(p: Position): Boolean = {
       p.line == loc.row &&
       p.column <= loc.col &&
       p.column + word.size > loc.col
     }
 
-    object FindWithTrace extends Traverser {
+    class FindWithTrace extends Traverser {
       import collection.mutable
       private val _path: mutable.Stack[Tree] = mutable.Stack()
       private var _trace: List[Tree] = Nil
@@ -89,8 +160,9 @@ class Parser {
     }
 
     val tree = astForFile(loc.file)
-    FindWithTrace.traverse(tree)
-    val trace = (FindWithTrace.trace)
+    val traceFinder = new FindWithTrace
+    traceFinder.traverse(tree)
+    val trace = (traceFinder.trace)
     val packages = trace.foldLeft(List[String]()) { (acc, t) =>
       t match {
         case PackageDef(pid, stats) =>
@@ -98,7 +170,7 @@ class Parser {
         case _ => acc
       }
     }
-    val imports = FindWithTrace.imports flatMap { case Import(expr, selectors) =>
+    val imports = traceFinder.imports flatMap { case Import(expr, selectors) =>
       val qual = treeToList(expr)
       for (ImportSelector(name, _, rename, _) <- selectors) yield {
         val ren = if (rename == null) name else rename
@@ -108,55 +180,12 @@ class Parser {
     (imports, packages)
   }
 
+
   def listSymbols(file: Path): List[JSymbol] = {
     val tree = astForFile(file)
-    tx(tree)
+    val symc = new SymbolCollector
+    symc.traverse(tree)
+    symc.symbols
   }
-  // list of first elements in the tree
-  // Meant for the case where tree really is a list
-  private def treeToList(tree: Tree): List[String] = {
-    @tailrec
-    def go(tree: Tree, ls: List[String]): List[String] = {
-      tree match {
-        case n: NameTree  =>
-          if (!tree.children.isEmpty)
-            go(tree.children.head, n.name.toString :: ls)
-          else n.name.toString :: ls
-        case _ => ls
-      }
-    }
-    go(tree, Nil).reverse
-  }
-
-  private def packagePidToNamespace(pid: RefTree): List[String] =
-    pid.name.toString :: treeToList(pid.qualifier)
-
-  private def positionToPos(pos: Position): Pos =
-    Pos(pos.source.path, pos.line, pos.column)
-
-
-  private def tx(tree: Tree, namespace: List[String] = Nil): List[JSymbol] = tree match {
-    case p:PackageDef =>
-      val ns = packagePidToNamespace(p.pid)
-      p.stats.flatMap{tx(_, ns)}
-
-    case c:ClassDef =>
-      val ns = c.name.toString :: namespace
-      // todo handle traits
-      val sym = JSymbol(ns, positionToPos(c.pos), "class")
-      sym :: c.impl.body.flatMap{tx(_, ns)}
-
-    case m:ModuleDef =>
-      val ns = m.name.toString :: namespace
-      m.impl.body.flatMap{tx(_, ns)}
-
-    case v:ValOrDefDef =>
-      val ns = v.name.toString :: namespace
-      List(JSymbol(ns, positionToPos(v.pos), "val"))
-
-    case _ =>
-      Nil
-  }
-
 
 }
