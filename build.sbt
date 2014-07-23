@@ -1,4 +1,4 @@
-name := "fintry2"
+name := "jumpscala"
 
 version := "1.0"
 
@@ -16,3 +16,9 @@ libraryDependencies ++= Seq(
 )
 
 fork := true
+
+exportJars := true
+
+packSettings
+
+packMain := Map("jumpscala" -> "Hi")

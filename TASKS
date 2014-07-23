@@ -17,3 +17,9 @@ Implement DirtFinder that finds the modified files and puts them on the dirt que
 
 Implement ParseWorker that reads dirty files off the dirtqueue, parses the files and inserts the symbols into the symbol table.
 
+Add end point for deleting a git root
+Start indexing type definitions as well. Think of others to include.
+Refactor file parser to use traverser.
+Think of how to how to reduce db size.
+Think of dot chained symbol lookup.
+Control memory usage of the app.
