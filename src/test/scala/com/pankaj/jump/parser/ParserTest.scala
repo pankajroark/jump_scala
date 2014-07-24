@@ -81,6 +81,7 @@ class ParserSpec extends FlatSpec with Matchers {
     |object Outer {
     |  class Inner(parser: Parser) {
     |    val v1 = new String
+    |    type StringAlias = String
     |    def func(word: Int) = {
     |      v1.size
     |    }
@@ -94,5 +95,6 @@ class ParserSpec extends FlatSpec with Matchers {
     assert(symbols.exists(_.rfqn == List("Inner", "Outer", "b", "a", "test")) == true)
     assert(symbols.exists(_.rfqn == List("v1", "Inner", "Outer", "b", "a", "test")) == true)
     assert(symbols.exists(_.rfqn == List("func", "Inner", "Outer", "b", "a", "test")) == true)
+    assert(symbols.exists(_.rfqn == List("StringAlias", "Inner", "Outer", "b", "a", "test")) == true)
   }
 }

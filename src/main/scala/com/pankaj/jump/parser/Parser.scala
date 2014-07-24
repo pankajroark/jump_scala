@@ -64,7 +64,8 @@ object Parser {
           case _:ValOrDefDef =>
             storeSymbol(t, "val")
 
-          //todo handle types
+          case TypeDef(mods, name, tparams, rhs) =>
+            storeSymbol(t, "type")
 
           case _ =>
         }
