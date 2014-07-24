@@ -12,7 +12,8 @@ libraryDependencies ++= Seq(
   "org.scala-lang" % "scala-compiler" % "2.10.2",
   "org.scala-lang" % "scala-library" % "2.10.2",
   "com.h2database" % "h2" % "1.4.180",
-  "com.jsuereth" %% "scala-arm" % "1.3"
+  "com.jsuereth" %% "scala-arm" % "1.3",
+  "org.mockito" % "mockito-all" % "1.9.5" % "test"
 )
 
 fork := true

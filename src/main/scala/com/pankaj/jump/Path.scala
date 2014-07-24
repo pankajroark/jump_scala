@@ -9,6 +9,9 @@ object Path {
       throw new IllegalArgumentException("invalid path")
     Path(str.split("/").tail)
   }
+  implicit object PathOrdering extends Ordering[Path] {
+    def compare(a: Path, b: Path) = a.parts.mkString compare b.parts.mkString
+  }
 }
 
 case class Path(parts: Seq[String]) {
@@ -18,7 +21,7 @@ case class Path(parts: Seq[String]) {
 
   def prependDir(dir: String) = Path(dir +: parts)
 
-  def appendDir(dir: String): Option[Path] = 
+  def appendDir(dir: String): Option[Path] =
     if (isDir) Some(Path(parts :+ dir))
     else None
 
@@ -28,13 +31,13 @@ case class Path(parts: Seq[String]) {
       rParts
     } else rParts.tail
 
-    @tailrec 
+    @tailrec
     def go(xs: List[String], acc: List[Path]): List[Path] = xs match {
       case Nil => acc
       case y :: ys => go(ys, Path(xs.reverse) :: acc)
     }
 
-    go(rParts.toList, Nil).reverse
+    go(dirs.toList, Nil).reverse
   }
 
   def toFile: File = new File(toString())

@@ -24,20 +24,20 @@ class PathSpec extends FlatSpec with Matchers {
 
   "path" should "list all dirs correctly when is file" in {
     val path: Path = "/root/sub/file.scala"
-    val expected: Seq[Path] = Seq("/sub", "/root/sub")
-    assert(path.allDirs === expected)
+    val expected: Seq[Path] = Seq("/root", "/root/sub")
+    assert(path.allDirs.sorted === expected.sorted)
   }
 
   "path" should "list all dirs correctly when is dir" in {
     val path: Path = "/root/sub"
-    val expected: Seq[Path] = Seq("/sub", "/root/sub")
-    assert(path.allDirs === expected)
+    val expected: Seq[Path] = Seq("/root", "/root/sub")
+    assert(path.allDirs.sorted === expected.sorted)
   }
 
   "path" should "list all dirs correctly when is dir and trailing slash" in {
     val path: Path = "/root/sub/"
-    val expected: Seq[Path] = Seq("/sub", "/root/sub")
-    assert(path.allDirs === expected)
+    val expected: Seq[Path] = Seq("/root", "/root/sub")
+    assert(path.allDirs.sorted === expected.sorted)
   }
 
   "path" should "convert to string correctly when is file" in {
