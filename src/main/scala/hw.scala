@@ -26,7 +26,7 @@ object Hi {
     val dirtFinder = new DirtFinder(fileTable, dirtQueue)
     val timer = new ScheduledThreadPoolTimer()
     // todo add a command line option for this
-    timer.schedule(10.seconds) {
+    timer.schedule(1.minutes) {
       try {
         diskCrawler.crawl()
         //fileTable.printFiles()

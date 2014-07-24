@@ -17,7 +17,9 @@ object Path {
 case class Path(parts: Seq[String]) {
   override def toString(): String = "/" + parts.mkString("/")
 
-  def isDir: Boolean = !parts.last.contains(".")
+  def isDir: Boolean = !filename.contains(".")
+
+  def filename: String = parts.last
 
   def prependDir(dir: String) = Path(dir +: parts)
 
@@ -41,4 +43,8 @@ case class Path(parts: Seq[String]) {
   }
 
   def toFile: File = new File(toString())
+
+  def extension: Option[String] =
+    if (!filename.contains(".")) None
+    else Some(filename.split('.').last)
 }

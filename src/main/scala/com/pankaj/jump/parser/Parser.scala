@@ -92,12 +92,13 @@ object Parser {
   def astForFile(file: Path): Tree = {
     val run = new Run
     val filename = file.toString
-    val parser = new syntaxAnalyzer.UnitParser(
-      new CompilationUnit(
+    val compUnit = new CompilationUnit(
         new BatchSourceFile(filename, Source.fromFile(filename).mkString)
       )
-    )
-    parser.parse()
+    file.extension match {
+      case Some("java") => new syntaxAnalyzer.JavaUnitParser(compUnit).parse()
+      case _ => new syntaxAnalyzer.UnitParser(compUnit).parse()
+    }
   }
 
   // list of first elements in the tree

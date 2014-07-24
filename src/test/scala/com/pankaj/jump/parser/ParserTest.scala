@@ -12,8 +12,8 @@ import java.io.{File, PrintWriter}
 
 
 class ParserSpec extends FlatSpec with Matchers {
-  def getPathForContent(content: String): Path = {
-    val temp = File.createTempFile("temp",".scala");
+  def getPathForContent(content: String, extn: String = "scala"): Path = {
+    val temp = File.createTempFile("temp","." + extn);
     temp.deleteOnExit()
     val pw = new PrintWriter(temp)
     pw.print(content.stripMargin)
@@ -130,5 +130,30 @@ class ParserSpec extends FlatSpec with Matchers {
     assert(symbols.exists(_.rfqn == List("v1", "Inner", "Outer", "b", "a", "test")) == true)
     assert(symbols.exists(_.rfqn == List("func", "Inner", "Outer", "b", "a", "test")) == true)
     assert(symbols.exists(_.rfqn == List("StringAlias", "Inner", "Outer", "b", "a", "test")) == true)
+  }
+
+  "parser" should "parse simple java file with a class correctly" in {
+    val content = """
+    |package com.twitter.ads.internal.eventstore;
+    |
+    |import com.twitter.ads.internal.trafficquality.InvalidTrafficDetector;
+    |
+    |public class AdTracker extends SharedEventProcessor {
+    | private static final Logger LOG = LoggerFactory.get();
+    | private List<SharedEventProcessor> eventProcessors;
+    |
+    | @Override
+    | public void init() {
+    |   for(SharedEventProcessor eventProcessor : eventProcessors) {
+    |   }
+    | }
+    |
+    |}
+    """
+
+    val path = getPathForContent(content, "java")
+    val parser = new Parser
+    val symbols = parser.listSymbols(path)
+    println(symbols)
   }
 }
