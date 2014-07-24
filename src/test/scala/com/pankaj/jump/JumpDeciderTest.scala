@@ -45,7 +45,7 @@ class JumpDeciderSpec extends FlatSpec with Matchers {
     println(jd.choose("Pos", Pos(path, 7, 33), Nil))
   }
 
-  "parser" should "use longest prefix match correctly" in {
+  "jump decider" should "use longest prefix match correctly" in {
     val content = """
     |package com.pankaj.jump
     |
@@ -67,4 +67,48 @@ class JumpDeciderSpec extends FlatSpec with Matchers {
     assert(chosen === Some(symbol))
   }
 
+
+  "jump decider" should "handle renamed imports correctly" in {
+    val content = """
+    |package com.pankaj.jump
+    |
+    |import com.pankaj.jump.parser.{JSymbol => Renamed, Pos, Parser}
+    |import path.to.link._
+    |
+    |object Test {
+    | val test: Renamed
+    |}
+    """
+    val (jd, path) = getJDForContent(content)
+    val wrongOne = JSymbol(List("MyType", "link", "to", "path"), Pos(path, 0, 0), "some")
+    val symbol = JSymbol(List("JSymbol", "parser", "jump", "pankaj", "com"), Pos(path, 0, 0), "some")
+    val wrongWithRenamedName = JSymbol(List("Renamed", "parser", "jump", "pankaj", "com"), Pos(path, 0, 0), "some")
+    val wrongTwo = JSymbol(List("MyType", "dummy2", "to", "path"), Pos(path, 0, 0), "some")
+
+    // wedging in the middle to avoid being picked up because of head or tail
+    val choices = List(wrongOne, symbol, wrongWithRenamedName, wrongTwo)
+    val chosen = jd.choose("Renamed", Pos(path, 8, 12), choices)
+    assert(chosen === Some(symbol))
+  }
+
+  "jump decider" should "look up symbol in its own package correctly" in {
+    val content = """
+    |package com.my.pkg
+    |
+    |import path.to.link._
+    |
+    |object Dummy {
+    | val test: MyType
+    |}
+    """
+    val (jd, path) = getJDForContent(content)
+    val correct = JSymbol(List("MyType", "pkg", "my", "com"), Pos(path, 0, 0), "some")
+    val wrongOne = JSymbol(List("Some", "other", "path"), Pos(path, 0, 0), "some")
+    val wrongTwo = JSymbol(List("MyType", "dummy2", "to", "path"), Pos(path, 0, 0), "some")
+
+    // wedging in the middle to avoid being picked up because of head or tail
+    val choices = List(wrongOne, correct, wrongTwo)
+    val chosen = jd.choose("MyType", Pos(path, 7, 12), choices)
+    assert(chosen === Some(correct))
+  }
 }

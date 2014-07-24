@@ -18,6 +18,8 @@ case class JSymbol(rfqn: List[String], loc: Pos, typ: String) {
   def qualName = rfqn.reverse.mkString(".")
 }
 
+// qual is in reverse
+// todo rename qual to indicate reverse
 case class JImport(qual: List[String], name: String, rename: String)
 
 object Parser {
@@ -39,6 +41,10 @@ object Parser {
         part match {
           case p: PackageDef =>
             packagePidToNamespace(p.pid)
+
+          // Take care of package object
+          case m:ModuleDef if m.name.toString == "package" =>
+            Nil
           case n: NameTree => List(n.name.toString)
         }
       }
@@ -169,8 +175,7 @@ class Parser {
       t match {
         case PackageDef(pid, stats) =>
           // treeToList(pid.qualifier) gives package qual in reverse order
-          val x = List(pid.name.toString) ++ treeToList(pid.qualifier) ++ acc
-          println(s"package $x")
+          val x = acc ++ List(pid.name.toString) ++ treeToList(pid.qualifier)
           x
         case _ => acc
       }
