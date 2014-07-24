@@ -11,12 +11,30 @@ class FileTable(val db: Db) extends Table {
     "Path varchar(1024) not null PRIMARY KEY, " +
     "ModStamp bigint not null, " +
     "ProcessStamp bigint, " +
-     "Imports varchar(60000)" +
+     "Imports varchar(60000), " +
+     "Id int not null AUTO_INCREMENT" +
     ")"
+
+  override val indexInfo = Map(
+    "ID_INDEX" -> List("Id")
+  )
 
   def fileExists(file: Path): Boolean = {
     val path = quote(file.toString)
     queryHasResults(s"select * from $name where Path=$path")
+  }
+
+  def idForFile(file: Path): Option[Int] = {
+    val path = quote(file.toString)
+    (query(s"select Id from $name where Path=$path") { rs =>
+      rs.getInt(1)
+    }).headOption
+  }
+
+  def fileForId(id: Int): Option[Path] = {
+    (query(s"select Path from $name where Id=$id") { rs =>
+      Path.fromString(rs.getString(1))
+    }).headOption
   }
 
   def fileInfo(file: Path): Option[(FileInfo, Long)] = {

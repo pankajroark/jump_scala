@@ -1,14 +1,14 @@
 package com.pankaj.jump
 
-import com.pankaj.jump.parser.{JImport, JSymbol, Pos, Parser}
-import com.pankaj.jump.db.SymbolTable
+import com.pankaj.jump.parser.{JImport, JSymbol, JSymbolShort, PosShort, Pos, Parser}
+import com.pankaj.jump.db.{SymbolTable, FileTable}
 import scala.annotation.tailrec
 
-class JumpDecider(parser: Parser, symbolTable: SymbolTable) {
-  def choose(word: String, pos: Pos, choices: List[JSymbol]): Option[JSymbol] = {
+class JumpDecider(parser: Parser, symbolTable: SymbolTable, fileTable: FileTable) {
+  def choose(word: String, pos: Pos, choices: List[JSymbolShort]): Option[JSymbol] = {
     val (imports, pkg) = parser.trackDownSymbol(word, pos)
 
-    def tryFindExactMatchWithoutRenames(): Option[JSymbol] = {
+    def tryFindExactMatchWithoutRenames(): Option[JSymbolShort] = {
       println("[INFO] tryFindExactMatchWithoutRenames called")
       val lookupNames = {
         val importNames = for{
@@ -29,7 +29,7 @@ class JumpDecider(parser: Parser, symbolTable: SymbolTable) {
       matchingSymbols.headOption
     }
 
-    def tryFindExactMatchWithRenames(): Option[JSymbol] = {
+    def tryFindExactMatchWithRenames(): Option[JSymbolShort] = {
       println("[INFO] tryFindExactMatchWithRenames called")
        (for{
           JImport(qual, name, rename) <- imports
@@ -41,7 +41,7 @@ class JumpDecider(parser: Parser, symbolTable: SymbolTable) {
         }).headOption
     }
 
-    def tryLongestPrefixMatch(): Option[JSymbol] = {
+    def tryLongestPrefixMatch(): Option[JSymbolShort] = {
       println("[INFO] tryLongestPrefixMatch called")
       val quals = {
         val importQuals = {
@@ -81,7 +81,9 @@ class JumpDecider(parser: Parser, symbolTable: SymbolTable) {
       bestChoice
     }
 
-    tryFindExactMatchWithoutRenames() orElse tryFindExactMatchWithRenames() orElse tryLongestPrefixMatch() orElse choices.headOption
+    val chosen = tryFindExactMatchWithoutRenames() orElse tryFindExactMatchWithRenames() orElse tryLongestPrefixMatch() orElse choices.headOption
+    chosen flatMap { jshort => jshort.toJSymbol{ id => fileTable.fileForId(id) }
+    }
     //choices.headOption
   }
 }

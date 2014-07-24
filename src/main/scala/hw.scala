@@ -16,7 +16,7 @@ object Hi {
     val db = new Db
     val fileTable = new FileTable(db)
     val rootsTable = new RootsTable(db)
-    val symbolTable = new SymbolTable(db)
+    val symbolTable = new SymbolTable(db, fileTable)
     fileTable.setUp()
     rootsTable.setUp()
     symbolTable.setUp()
@@ -40,7 +40,7 @@ object Hi {
       }
     }
 
-    val jumpDecider = new JumpDecider(parser, symbolTable)
+    val jumpDecider = new JumpDecider(parser, symbolTable, fileTable)
     val jumpHandler = new JumpHandler(jumpDecider, symbolTable)
     val jumpService = new JumpService(rootsTracker, jumpHandler)
     val server = Http.serve(":8081", jumpService)
