@@ -1,6 +1,7 @@
 package com.pankaj.jump.db
 
 import resource._
+import java.sql.Statement
 import com.pankaj.jump.fs.FileInfo
 import com.pankaj.jump.Path
 
@@ -71,8 +72,8 @@ class FileTable(val db: Db) extends Table {
   // Returns a stream of results
   // todo figure out stream close mechanism:
   // how do we make sure the underlying result set
-  // is closed?
-  def allFiles: Stream[(FileInfo, Long)] = {
+  // is closed? Close it manually right now
+  def allFiles: (Statement, Stream[(FileInfo, Long)]) = {
     queryStream(s"SELECT * FROM $name") { rs =>
       (FileInfo(rs.getString(1), rs.getLong(2)), rs.getLong(3))
     }
@@ -80,6 +81,8 @@ class FileTable(val db: Db) extends Table {
 
   // mainly for debugging
   def printFiles() {
-    allFiles.toList.map(println _)
+    val (stmt, stream) = allFiles
+    stream.toList.map(println _)
+    stmt.close()
   }
 }

@@ -8,11 +8,13 @@ import java.util.concurrent.ConcurrentLinkedQueue
 // and if process time < mod time then inserts file into work queue
 class DirtFinder(fileTable: FileTable, dirtQueue: ConcurrentLinkedQueue[Path]) {
   def run() = {
-    for( (fi, procTs) <- fileTable.allFiles) {
+    val (stmt, stream) = fileTable.allFiles
+    for( (fi, procTs) <- stream) {
       if (fi.modStamp > procTs) {
         dirtQueue.add(fi.path)
         println(s"added ${fi.path}")
       }
     }
+    stmt.close()
   }
 }

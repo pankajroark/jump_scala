@@ -1,7 +1,7 @@
 package com.pankaj.jump.db
 
 import resource._
-import java.sql.ResultSet
+import java.sql.{ResultSet, Statement}
 
 trait Table {
   val db: Db
@@ -72,13 +72,14 @@ trait Table {
   }
 
   // Only use result set to read values, don't mutate
-  def queryStream[A](q: String)(f: ResultSet => A): Stream[A] = {
+  // Don't use right now doesn't close connection
+  def queryStream[A](q: String)(f: ResultSet => A): (Statement, Stream[A]) = {
     val stmt = db.conn.createStatement
     val rs = stmt.executeQuery(q)
-    (new Iterator[A] {
+    (stmt, (new Iterator[A] {
       def hasNext = rs.next()
       def next() = f(rs)
-    }).toStream
+    }).toStream)
   }
 
   def update(stmtString: String) = {
