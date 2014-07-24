@@ -40,7 +40,7 @@ object Hi {
       }
     }
 
-    val jumpDecider = new JumpDecider(parser)
+    val jumpDecider = new JumpDecider(parser, symbolTable)
     val jumpHandler = new JumpHandler(jumpDecider, symbolTable)
     val jumpService = new JumpService(rootsTracker, jumpHandler)
     val server = Http.serve(":8081", jumpService)

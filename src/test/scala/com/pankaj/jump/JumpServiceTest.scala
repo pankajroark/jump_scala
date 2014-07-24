@@ -21,7 +21,7 @@ class JumpServiceSpec extends FlatSpec with Matchers {
     val rootsTracker = new RootsTracker(rootsTable)
     val symbolTable = new SymbolTable(db)
     val parser = new Parser
-    val jumpDecider = new JumpDecider(parser)
+    val jumpDecider = new JumpDecider(parser, symbolTable)
     val jumpHandler = new JumpHandler(jumpDecider, symbolTable)
     val server = Http.serve(":8081", new JumpService(rootsTracker, jumpHandler))
     try{

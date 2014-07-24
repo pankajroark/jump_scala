@@ -19,7 +19,7 @@ Implement ParseWorker that reads dirty files off the dirtqueue, parses the files
 
 Add end point for deleting a git root
 Start indexing type definitions as well. Think of others to include.
-Refactor file parser to use traverser.
+R-e-f-a-c-t-o-r- -f-i-l-e- -p-a-r-s-e-r- -t-o- -u-s-e- -t-r-a-v-e-r-s-e-r-.- --- -D-o-n-e
 Think of how to how to reduce db size. focus on the symbol table.
   - Instead of file path we could store id of the corresponding entry in file table.
 Think of dot chained symbol lookup.

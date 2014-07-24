@@ -1,22 +1,24 @@
 package com.pankaj.jump
 
 import com.pankaj.jump.parser.{JImport, JSymbol, Pos, Parser}
+import com.pankaj.jump.db.SymbolTable
 import scala.annotation.tailrec
 
-class JumpDecider(parser: Parser) {
+class JumpDecider(parser: Parser, symbolTable: SymbolTable) {
   def choose(word: String, pos: Pos, choices: List[JSymbol]): Option[JSymbol] = {
     val (imports, pkg) = parser.trackDownSymbol(word, pos)
 
-    def tryFindExactMatch(): Option[JSymbol] = {
-      println("[INFO] tryFindExactMatch called")
+    def tryFindExactMatchWithoutRenames(): Option[JSymbol] = {
+      println("[INFO] tryFindExactMatchWithoutRenames called")
       val lookupNames = {
         val importNames = for{
-          JImport(qual, name, rename) <- imports
-          if(rename == word || name == "_")
+          JImport(qual, name, _) <- imports
+          if name == "_" || word == name
         } yield {
           (word :: qual).reverse.mkString(".")
         }
-        val packageName = (word :: pkg.reverse).reverse.mkString(".")
+
+        val packageName = (word :: pkg).reverse.mkString(".")
         packageName :: importNames
       }
       val matchingSymbols = for {
@@ -25,6 +27,18 @@ class JumpDecider(parser: Parser) {
         if (symbol.qualName == lName)
       } yield symbol
       matchingSymbols.headOption
+    }
+
+    def tryFindExactMatchWithRenames(): Option[JSymbol] = {
+      println("[INFO] tryFindExactMatchWithRenames called")
+       (for{
+          JImport(qual, name, rename) <- imports
+          if word != name && word == rename
+          newChoices = symbolTable.symbolsForName(name)
+          choice <- newChoices.find(_.qualName == (name :: qual).reverse.mkString("."))
+        } yield {
+          choice
+        }).headOption
     }
 
     def tryLongestPrefixMatch(): Option[JSymbol] = {
@@ -67,7 +81,7 @@ class JumpDecider(parser: Parser) {
       bestChoice
     }
 
-    tryFindExactMatch() orElse tryLongestPrefixMatch() orElse choices.headOption
+    tryFindExactMatchWithoutRenames() orElse tryFindExactMatchWithRenames() orElse tryLongestPrefixMatch() orElse choices.headOption
     //choices.headOption
   }
 }

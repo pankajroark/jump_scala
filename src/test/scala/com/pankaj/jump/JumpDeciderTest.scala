@@ -8,6 +8,7 @@ import org.scalatest.Matchers
 import org.jboss.netty.handler.codec.http._
 import org.jboss.netty.buffer.ChannelBuffers
 import com.pankaj.jump.parser._
+import com.pankaj.jump.db._
 import java.io.{File, PrintWriter}
 
 
@@ -20,8 +21,10 @@ class JumpDeciderSpec extends FlatSpec with Matchers {
     pw.print(content.stripMargin)
     pw.close()
     val path: Path = Path.fromString(temp.getPath)
+    val db = new Db
+    val symbolTable = new SymbolTable(db)
     val parser = new Parser
-    (new JumpDecider(parser), path)
+    (new JumpDecider(parser, symbolTable), path)
   }
 
   "parser" should "track down symbol correctly" in {

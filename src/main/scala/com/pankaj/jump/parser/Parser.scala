@@ -114,6 +114,7 @@ class Parser {
   import global._
 
   // @return (Imports, Package)
+  // package is reverse
   def trackDownSymbol(word: String, loc: Pos): (List[JImport], List[String]) = {
     def wordInside(p: Position): Boolean = {
       p.line == loc.row &&
@@ -166,7 +167,10 @@ class Parser {
     val packages = trace.foldLeft(List[String]()) { (acc, t) =>
       t match {
         case PackageDef(pid, stats) =>
-          treeToList(pid.qualifier) ++ List(pid.name.toString) ++ acc
+          // treeToList(pid.qualifier) gives package qual in reverse order
+          val x = List(pid.name.toString) ++ treeToList(pid.qualifier) ++ acc
+          println(s"package $x")
+          x
         case _ => acc
       }
     }
