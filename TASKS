@@ -15,17 +15,29 @@ Implement DirtFinder that finds the modified files and puts them on the dirt que
   How do we make sure that DF does queue same files again and again
   When we process the file we'll update the process time of the file, before we parse the file we'll check the modstamp of the file again to avoid unnecessary work.
 
-Implement ParseWorker that reads dirty files off the dirtqueue, parses the files and inserts the symbols into the symbol table.
-
-Add end point for deleting a git root
-Start indexing type definitions as well. Think of others to include.
+I-m-p-l-e-m-e-n-t- -P-a-r-s-e-W-o-r-k-e-r- -t-h-a-t- -r-e-a-d-s- -d-i-r-t-y- -f-i-l-e-s- -o-f-f- -t-h-e- -d-i-r-t-q-u-e-u-e-,- -p-a-r-s-e-s- -t-h-e- -f-i-l-e-s- -a-n-d- -i-n-s-e-r-t-s- -t-h-e- -s-y-m-b-o-l-s- -i-n-t-o- -t-h-e- -s-y-m-b-o-l- -t-a-b-l-e-.
+S-t-a-r-t- -i-n-d-e-x-i-n-g- -t-y-p-e- -d-e-f-i-n-i-t-i-o-n-s- -a-s- -w-e-l-l-.- -T-h-i-n-k- -o-f- -o-t-h-e-r-s- -t-o- -i-n-c-l-u-d-e-.
 R-e-f-a-c-t-o-r- -f-i-l-e- -p-a-r-s-e-r- -t-o- -u-s-e- -t-r-a-v-e-r-s-e-r-.- --- -D-o-n-e
+
+More unit tests for everything
 Think of how to how to reduce db size. focus on the symbol table.
   - Instead of file path we could store id of the corresponding entry in file table.
-Think of dot chained symbol lookup.
-Control memory usage of the app. JVM_OPT=-Xmx256m
+    - Modify the file table to also store an id and create an index on the id
+    - Implement JSymbolShort to only store file id
+    - Choose the symbol and then expand the file id at the end.
+    - Actually write unit tests first to avoid breaking
+
+
+C-o-n-t-r-o-l- -m-e-m-o-r-y- -u-s-a-g-e- -o-f- -t-h-e- -a-p-p-.- -J-V-M-_-O-P-T-=---X-m-x-2-5-6-m
 Add an end point for marking a file dirty directly. On the vim side call
   this api whenever a file is saved. Perhaps also when it's opened. We'll
   verify the timestamps anyway so won't cost much.
 
-More unit tests for everything
+Think of dot chained symbol lookup.
+Add end point for deleting a git root
+
+
+Unit Tests
+ - For renamed import
+ - For exact match
+ - For prefix match
