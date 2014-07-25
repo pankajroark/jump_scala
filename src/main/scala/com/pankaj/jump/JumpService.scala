@@ -43,13 +43,17 @@ class JumpService(
           request.params.get("root") match {
             case Some(path) =>
               // todo return 400 in case root could not be added
-              okResponse(rootsTracker.track(path).toString)
+              val rootAdded = rootsTracker.track(path)
+              if (rootAdded) diskCrawler.send(())
+              okResponse(rootAdded.toString)
             case _ => NotFound
           }
         }
 
       case Root / "roots" =>
-        Future { okResponse(rootsTracker.roots.mkString("\n")) }
+        Future {
+          okResponse(rootsTracker.roots.mkString("\n"))
+        }
 
       case Root/ "jump" =>
         val params = request.params
@@ -61,6 +65,15 @@ class JumpService(
           jumpResult <- jumpHandler.jump(symbol, file, row, col)
         } yield {
           okResponse(jumpResult)
+        })
+
+      case Root / "dirty" =>
+        val params = request.params
+        Future.const(for {
+          file <- params.get("file").toTry(new Exception("file not supplied"))
+        } yield {
+          parseWorker.send(file)
+          okResponse("marked dirty")
         })
 
       case _ => Future{NotFound}

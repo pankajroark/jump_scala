@@ -22,13 +22,15 @@ object Jumper {
     rootsTable.setUp()
     symbolTable.setUp()
     val rootsTracker = new RootsTracker(rootsTable)
-    val diskCrawlerActor = new ThreadActor(new DiskCrawler(rootsTracker, fileTable))
-    diskCrawlerActor.start()
     val parseWorkerActor = new ThreadActor(new ParseWorker(fileTable, symbolTable, parser))
     parseWorkerActor.start()
-
     val dirtFinderActor = new ThreadActor(new DirtFinder(fileTable, parseWorkerActor))
     dirtFinderActor.start()
+    val diskCrawlerActor = new ThreadActor(
+      new DiskCrawler(rootsTracker, fileTable, dirtFinderActor)
+    )
+    diskCrawlerActor.start()
+
     val timer = new ScheduledThreadPoolTimer()
     // todo add a command line option for this
     timer.schedule(1.minutes) {

@@ -2,6 +2,7 @@ package com.pankaj.jump.fs
 
 import com.pankaj.jump.Path
 import com.pankaj.jump.db.FileTable
+import com.pankaj.jump.util.ThreadActor
 import java.io.File
 
 case class FileInfo(path: Path, modStamp: Long)
@@ -12,7 +13,8 @@ case class FileInfo(path: Path, modStamp: Long)
 // Need to use some kind of periodic task runner
 class DiskCrawler(
   rootsTracker: RootsTracker,
-  fileTable: FileTable
+  fileTable: FileTable,
+  dirtFinder: ThreadActor[Unit]
 ) extends (Unit => Unit) {
   def apply(u: Unit) {
     println("crawl")
@@ -25,6 +27,7 @@ class DiskCrawler(
         //println(fi.path)
       }
     }
+    dirtFinder.send(())
   }
 
   def isJavaOrScalaFile(f: File): Boolean =
