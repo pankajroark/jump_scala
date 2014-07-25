@@ -10,8 +10,11 @@ case class FileInfo(path: Path, modStamp: Long)
 // in File table
 // Only look for java/scala files
 // Need to use some kind of periodic task runner
-class DiskCrawler(rootsTracker: RootsTracker, fileTable: FileTable) {
-  def crawl() {
+class DiskCrawler(
+  rootsTracker: RootsTracker,
+  fileTable: FileTable
+) extends (Unit => Unit) {
+  def apply(u: Unit) {
     println("crawl")
     val roots = rootsTracker.roots
     roots foreach { root =>

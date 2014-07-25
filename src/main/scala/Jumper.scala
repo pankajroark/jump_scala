@@ -22,20 +22,21 @@ object Jumper {
     rootsTable.setUp()
     symbolTable.setUp()
     val rootsTracker = new RootsTracker(rootsTable)
-    val diskCrawler = new DiskCrawler(rootsTracker, fileTable)
-    val parseWorker = new ParseWorker(fileTable, symbolTable, parser)
-    val parseWorkerActor = new ThreadActor(parseWorker)
+    val diskCrawlerActor = new ThreadActor(new DiskCrawler(rootsTracker, fileTable))
+    diskCrawlerActor.start()
+    val parseWorkerActor = new ThreadActor(new ParseWorker(fileTable, symbolTable, parser))
     parseWorkerActor.start()
 
-    val dirtFinder = new DirtFinder(fileTable, parseWorkerActor)
+    val dirtFinderActor = new ThreadActor(new DirtFinder(fileTable, parseWorkerActor))
+    dirtFinderActor.start()
     val timer = new ScheduledThreadPoolTimer()
     // todo add a command line option for this
     timer.schedule(1.minutes) {
       try {
-        diskCrawler.crawl()
+        diskCrawlerActor.send(())
         //fileTable.printFiles()
         //rootsTable.printRoots()
-        dirtFinder.run()
+        dirtFinderActor.send(())
         //symbolTable.printAll()
       } catch {
         case e: Throwable =>
@@ -46,7 +47,12 @@ object Jumper {
 
     val jumpDecider = new JumpDecider(parser, symbolTable, fileTable)
     val jumpHandler = new JumpHandler(jumpDecider, symbolTable)
-    val jumpService = new JumpService(rootsTracker, jumpHandler)
+    val jumpService = new JumpService(
+      rootsTracker,
+      jumpHandler,
+      parseWorkerActor,
+      diskCrawlerActor
+    )
     val server = Http.serve(":8081", jumpService)
 
     /*

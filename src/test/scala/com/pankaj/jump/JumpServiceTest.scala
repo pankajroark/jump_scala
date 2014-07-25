@@ -15,6 +15,7 @@ import org.jboss.netty.buffer.ChannelBuffers
 import com.pankaj.jump.db._
 import com.pankaj.jump.parser._
 import com.pankaj.jump.fs._
+import com.pankaj.jump.util.ThreadActor
 
 
 class JumpServiceSpec extends FlatSpec with Matchers with MockitoSugar {
@@ -24,7 +25,9 @@ class JumpServiceSpec extends FlatSpec with Matchers with MockitoSugar {
     val jumpHandler = mock[JumpHandler]
     when(jumpHandler.jump(anyString(), anyString(), anyInt(), anyInt()))
       .thenReturn(Return("/path/to/another/file:1:1"))
-    val server = Http.serve(":8081", new JumpService(rootsTracker, jumpHandler))
+    val parseWorker = new ThreadActor({file: Path => ()})
+    val diskCrawler = new ThreadActor({u: Unit => ()})
+    val server = Http.serve(":8081", new JumpService(rootsTracker, jumpHandler, parseWorker, diskCrawler))
     try{
       val client = Http.newService("localhost:8081")
       val file = "/path/to/file"

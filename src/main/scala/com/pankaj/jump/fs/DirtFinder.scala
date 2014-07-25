@@ -7,8 +7,11 @@ import java.util.concurrent.ConcurrentLinkedQueue
 
 // Goes over the file table, compares mod stamp to process stamp
 // and if process time < mod time then inserts file into work queue
-class DirtFinder(fileTable: FileTable, dirtProcessor:ThreadActor[Path]) {
-  def run() = {
+class DirtFinder(
+  fileTable: FileTable,
+  dirtProcessor:ThreadActor[Path]
+  ) extends (Unit => Unit) {
+  def apply(u: Unit) = {
     for( (fi, procTs) <- fileTable.allFiles) {
       if (fi.modStamp > procTs) {
         dirtProcessor.send(fi.path)

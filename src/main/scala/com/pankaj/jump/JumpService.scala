@@ -9,12 +9,15 @@ import org.jboss.netty.buffer.ChannelBuffers
 import org.jboss.netty.buffer.ChannelBuffers.copiedBuffer
 
 import com.pankaj.jump.fs.RootsTracker
+import com.pankaj.jump.util.ThreadActor
 
 import java.net.URLDecoder
 
 class JumpService(
   rootsTracker: RootsTracker,
-  jumpHandler: JumpHandler
+  jumpHandler: JumpHandler,
+  parseWorker: ThreadActor[Path],
+  diskCrawler: ThreadActor[Unit]
 ) extends Service[HttpRequest, HttpResponse] {
 
   val UTF8 = "UTF-8"
