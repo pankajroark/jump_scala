@@ -41,3 +41,5 @@ Unit Tests
  - For renamed import
  - For exact match
  - For prefix match
+
+Support a way of listing the closest matches

@@ -17,8 +17,6 @@ class DiskCrawler(rootsTracker: RootsTracker, fileTable: FileTable) {
     roots foreach { root =>
       crawl(root, isJavaOrScalaFile _){ fi =>
         // todo use log here instead of println
-        //println(fi.path)
-        //println(fi.modStamp)
         // todo insert into File Table here
         fileTable.addOrUpdateFileWithModStamp(fi)
         //println(fi.path)

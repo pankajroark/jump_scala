@@ -6,11 +6,12 @@ import java.net.InetSocketAddress
 import java.util.concurrent.ConcurrentLinkedQueue
 import org.jboss.netty.handler.codec.http._
 import com.pankaj.jump.{JumpDecider, JumpHandler, JumpService, Path}
-import com.pankaj.jump.parser.{Parser, ParseWorkerThread}
+import com.pankaj.jump.parser.{Parser, ParseWorker}
 import com.pankaj.jump.fs.{DirtFinder, DiskCrawler, RootsTracker}
 import com.pankaj.jump.db.{Db, FileTable, RootsTable, SymbolTable}
+import com.pankaj.jump.util.ThreadActor
 
-object Hi {
+object Jumper {
   def main(args:Array[String]): Unit = {
     val parser = new Parser
     val db = new Db
@@ -22,8 +23,11 @@ object Hi {
     symbolTable.setUp()
     val rootsTracker = new RootsTracker(rootsTable)
     val diskCrawler = new DiskCrawler(rootsTracker, fileTable)
-    val dirtQueue = new ConcurrentLinkedQueue[Path]
-    val dirtFinder = new DirtFinder(fileTable, dirtQueue)
+    val parseWorker = new ParseWorker(fileTable, symbolTable, parser)
+    val parseWorkerActor = new ThreadActor(parseWorker)
+    parseWorkerActor.start()
+
+    val dirtFinder = new DirtFinder(fileTable, parseWorkerActor)
     val timer = new ScheduledThreadPoolTimer()
     // todo add a command line option for this
     timer.schedule(1.minutes) {
@@ -44,9 +48,6 @@ object Hi {
     val jumpHandler = new JumpHandler(jumpDecider, symbolTable)
     val jumpService = new JumpService(rootsTracker, jumpHandler)
     val server = Http.serve(":8081", jumpService)
-    val parseWorkerThread = new ParseWorkerThread(dirtQueue, fileTable, symbolTable, parser)
-    val parseWorker = new Thread(parseWorkerThread)
-    parseWorker.start()
 
     /*
     val file: Path = "/Users/pankajg/workspace/bc3/finagle/finagle-core/src/main/scala/com/twitter/finagle/Context.scala"

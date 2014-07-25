@@ -22,4 +22,4 @@ exportJars := true
 
 packSettings
 
-packMain := Map("jumpscala" -> "Hi")
+packMain := Map("jumpscala" -> "Jumper")

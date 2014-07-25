@@ -7,14 +7,19 @@ import com.pankaj.jump.fs.FileInfo
 
 // ParserWorker reads dirty files from the dirt queue, parses them and inserts
 // qualified symbols in the Symbol table
-class ParseWorkerThread(
-  dirtQueue: ConcurrentLinkedQueue[Path],
+class ParseWorker(
   fileTable: FileTable,
   symbolTable: SymbolTable,
   parser: Parser
-) extends Runnable {
+) extends (Path => Unit) {
 
-  def processFile(file: Path) = {
+  def apply(file: Path): Unit = {
+    // First, check if the file still needs processing
+    // Second, parse file and insert symbols in symbol table
+    if(fileNeedsProcessing(file)) processFile(file)
+  }
+
+  private def processFile(file: Path) = {
     println(s"processing ${file.toString}")
     // remove existing entries from Symbol Table
     symbolTable.deleteSymbolsForFile(file)
@@ -25,23 +30,11 @@ class ParseWorkerThread(
     // Mark processed in filetable
   }
 
-  def fileNeedsProcessing(file: Path): Boolean =
+  private def fileNeedsProcessing(file: Path): Boolean =
     fileTable.fileInfo(file) match {
       case Some((FileInfo(_, modTs), procTs)) if modTs < procTs => false
       case _ => true
     }
 
-  def run(): Unit = {
-    while(true) {
-      val file = dirtQueue.poll()
-      if(file == null) {
-        Thread.sleep(1000)
-      } else {
-        // First, check if the file still needs processing
-        // Second, parse file and insert symbols in symbol table
-        if(fileNeedsProcessing(file)) processFile(file)
-      }
-    }
-  }
 }
 
