@@ -8,7 +8,7 @@ class Db {
 
   val name = "jump"
 
-  val conn = DriverManager.getConnection(s"jdbc:h2:~/$name", "sa", "")
+  val conn = DriverManager.getConnection(s"jdbc:h2:~/$name;MV_STORE=FALSE;MVCC=FALSE", "sa", "")
 
   lazy val metadata: DatabaseMetaData = conn.getMetaData
 

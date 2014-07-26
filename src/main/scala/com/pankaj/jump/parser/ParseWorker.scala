@@ -32,7 +32,7 @@ class ParseWorker(
 
   private def fileNeedsProcessing(file: Path): Boolean =
     fileTable.fileInfo(file) match {
-      case Some((FileInfo(_, modTs), procTs)) if modTs < procTs => false
+      case Some((_, procTs)) if file.toFile.lastModified < procTs => false
       case _ => true
     }
 

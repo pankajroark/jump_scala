@@ -5,7 +5,7 @@ import com.pankaj.jump.db.{SymbolTable, FileTable}
 import scala.annotation.tailrec
 
 class JumpDecider(parser: Parser, symbolTable: SymbolTable, fileTable: FileTable) {
-  def choose(word: String, pos: Pos, choices: List[JSymbolShort]): Option[JSymbol] = {
+  def choose(word: String, pos: Pos, choices: List[JSymbolShort]): List[JSymbol] = {
     val (imports, pkg) = parser.trackDownSymbol(word, pos)
 
     def tryFindExactMatchWithoutRenames(): Option[JSymbolShort] = {
@@ -32,7 +32,7 @@ class JumpDecider(parser: Parser, symbolTable: SymbolTable, fileTable: FileTable
     def tryFindExactMatchWithRenames(): Option[JSymbolShort] = {
       println("[INFO] tryFindExactMatchWithRenames called")
        (for{
-          JImport(qual, name, rename) <- imports
+          j@JImport(qual, name, rename) <- imports
           if word != name && word == rename
           newChoices = symbolTable.symbolsForName(name)
           choice <- newChoices.find(_.qualName == (name :: qual).reverse.mkString("."))
@@ -41,7 +41,7 @@ class JumpDecider(parser: Parser, symbolTable: SymbolTable, fileTable: FileTable
         }).headOption
     }
 
-    def tryLongestPrefixMatch(): Option[JSymbolShort] = {
+    def tryLongestPrefixMatch(): List[JSymbolShort] = {
       println("[INFO] tryLongestPrefixMatch called")
       val quals = {
         val importQuals = {
@@ -66,24 +66,72 @@ class JumpDecider(parser: Parser, symbolTable: SymbolTable, fileTable: FileTable
         go(xs, ys, 0)
       }
 
-      var bestChoice = choices.headOption
-      var choiceCount = 0
+      // Int.MaxValue if not prefix
+      // else distance
+      // The smaller the distance the better the match
+      def prefixDistance(imp: List[String], choice: List[String]): Int = {
+        @tailrec
+        def go(xs: List[String], ys: List[String], d: Int): Int = {
+          (xs, ys) match {
+            case (p::ps, q::qs) =>
+              if (p == q) go(ps, qs, d)
+              else Int.MaxValue
+            case (p::ps, Nil) => // import is longer than choice
+              Int.MaxValue
+            case (Nil, z) => ys.size
+            case (Nil, Nil) => 0
+          }
+        }
+        go(imp, choice, 0)
+      }
+
+      var bestChoices = Set[JSymbolShort]()
+      var choiceCount = Int.MaxValue
       for {
         choice <- choices
         qual <- quals
       } {
-        val count = prefixMatchCount(choice.rfqn.reverse, qual)
-        if (count > choiceCount) {
+        //val count = prefixMatchCount(choice.rfqn.reverse, qual) - qual.size
+        val count = prefixDistance(choice.rfqn.tail.reverse, qual)
+        //println(s"$count :: $choice :: $qual")
+        if (count < choiceCount) {
           choiceCount = count
-          bestChoice = Some(choice)
+          bestChoices = Set(choice)
+        } else if (count == choiceCount) {
+          bestChoices = bestChoices + choice
         }
       }
-      bestChoice
+
+      println(s"best match is $choiceCount ")
+      println(s"best choices are ${bestChoices.mkString("\n")} ")
+      // todo choose the one that's closest to package
+      /*
+      var cc = 0
+      var bc: Option[JSymbolShort] = None
+      for (choice <- bestChoices) {
+        val count = prefixMatchCount(choice.rfqn.reverse, pkg.reverse)
+        if (count > cc) {
+          cc = count
+          bc = Some(choice)
+        }
+      }
+      bc
+      */
+     bestChoices.toList
     }
 
-    val chosen = tryFindExactMatchWithoutRenames() orElse tryFindExactMatchWithRenames() orElse tryLongestPrefixMatch() orElse choices.headOption
-    chosen flatMap { jshort => jshort.toJSymbol{ id => fileTable.fileForId(id) }
+    val exactlyChosen = tryFindExactMatchWithoutRenames() orElse tryFindExactMatchWithRenames()
+    // sort default choices
+    val chosen = exactlyChosen match {
+      case Some(choice) => List(choice)
+      case None =>
+        val prefixMatches = tryLongestPrefixMatch()
+        if (!prefixMatches.isEmpty) prefixMatches
+        else choices
     }
+    (chosen flatMap { jshort =>
+      jshort.toJSymbol{ id => fileTable.fileForId(id) }
+    }).toSet.toList
     //choices.headOption
   }
 }

@@ -40,7 +40,10 @@ class SymbolTable(val db: Db, fileTable: FileTable) extends Table {
 
   def deleteSymbolsForFile(path: Path) =
     for (fileId <- fileTable.idForFile(path)) {
-      update(s"delete from $name where FileId=$fileId")
+      val query = s"delete from $name where FileId=$fileId"
+
+      println(s"delete query $query")
+      update(query)
     }
 
   def rowToJSymbol(rs: ResultSet): JSymbolShort = {

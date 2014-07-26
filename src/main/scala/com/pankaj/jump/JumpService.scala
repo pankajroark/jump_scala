@@ -64,6 +64,7 @@ class JumpService(
           col <- params.get("col").toTry(new Exception("col not supplied")) map (_.toInt)
           jumpResult <- jumpHandler.jump(symbol, file, row, col)
         } yield {
+          println(s"jump result :: $jumpResult")
           okResponse(jumpResult)
         })
 

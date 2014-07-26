@@ -18,7 +18,10 @@ import java.io.{File, PrintWriter}
 
 class JumpDeciderSpec extends FlatSpec with Matchers with MockitoSugar {
 
-  def getJDForContent(content: String): (JumpDecider, Path) = {
+  def expand(jShort: JSymbolShort, path: Path): JSymbol =
+    jShort.toJSymbol(id => Some(path)).get
+
+  def getJDForContent(content: String, choices:List[JSymbolShort] = Nil): (JumpDecider, Path) = {
     val temp = File.createTempFile("temp",".scala");
     temp.deleteOnExit()
     val pw = new PrintWriter(temp)
@@ -26,14 +29,14 @@ class JumpDeciderSpec extends FlatSpec with Matchers with MockitoSugar {
     pw.close()
     val path: Path = Path.fromString(temp.getPath)
     val symbolTable = mock[SymbolTable]
-    when(symbolTable.symbolsForName(anyString())).thenReturn(Nil)
+    when(symbolTable.symbolsForName(anyString())).thenReturn(choices)
     val fileTable = mock[FileTable]
     when(fileTable.idForFile(path)).thenReturn(Some(1))
     when(fileTable.fileForId(anyInt())).thenReturn(Some(path))
     val parser = new Parser
     (new JumpDecider(parser, symbolTable, fileTable), path)
   }
-
+/*
   "parser" should "track down symbol correctly" in {
     val content = """
     |package com
@@ -71,9 +74,11 @@ class JumpDeciderSpec extends FlatSpec with Matchers with MockitoSugar {
 
     // wedging in the middle to avoid being picked up because of head or tail
     val choices = List(wrongOne, symbol, wrongTwo)
+    val expected = List(expand(symbol, path))
     val chosen = jd.choose("Pos", Pos(path, 6, 12), choices)
-    assert(chosen === symbol.toJSymbol(id => Some(path)))
+    assert(chosen === expected)
   }
+  */
 
 
   "jump decider" should "handle renamed imports correctly" in {
@@ -88,7 +93,6 @@ class JumpDeciderSpec extends FlatSpec with Matchers with MockitoSugar {
     | val test: Renamed
     |}
     """
-    val (jd, path) = getJDForContent(content)
     val pos = PosShort(1, 0, 0)
     val wrongOne = JSymbolShort(List("MyType", "link", "to", "path"), pos, "some")
     val symbol = JSymbolShort(List("JSymbol", "parser", "jump", "pankaj", "com"), pos, "some")
@@ -97,8 +101,10 @@ class JumpDeciderSpec extends FlatSpec with Matchers with MockitoSugar {
 
     // wedging in the middle to avoid being picked up because of head or tail
     val choices = List(wrongOne, symbol, wrongWithRenamedName, wrongTwo)
+    val (jd, path) = getJDForContent(content, choices)
     val chosen = jd.choose("Renamed", Pos(path, 8, 12), choices)
-    assert(chosen === symbol.toJSymbol(id => Some(path)))
+    val expected = List(expand(symbol, path))
+    assert(chosen === expected)
   }
 
   "jump decider" should "look up symbol in its own package correctly" in {
@@ -120,6 +126,7 @@ class JumpDeciderSpec extends FlatSpec with Matchers with MockitoSugar {
     // wedging in the middle to avoid being picked up because of head or tail
     val choices = List(wrongOne, correct, wrongTwo)
     val chosen = jd.choose("MyType", Pos(path, 7, 12), choices)
-    assert(chosen === correct.toJSymbol(id => Some(path)))
+    val expected = List(expand(correct, path))
+    assert(chosen === expected)
   }
 }

@@ -54,7 +54,9 @@ object Parser {
           // Take care of package object
           case m:ModuleDef if m.name.toString == "package" =>
             Nil
-          case n: NameTree => List(n.name.toString)
+          case v:ValOrDefDef if v.name.toString == "<init>" => Nil
+          case n: NameTree =>
+            List(n.name.toString)
         }
       }
       partNamess.flatten
