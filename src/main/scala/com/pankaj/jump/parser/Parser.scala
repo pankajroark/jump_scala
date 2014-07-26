@@ -45,6 +45,8 @@ object Parser {
 
     def symbols: List[JSymbol] = _symbols
 
+    // blank namespace is error, ignore such elements
+    // namespace is reverse fully qualified name
     private def namespace(): List[String] = {
       val partNamess = for (part <- _path.toList if part.isInstanceOf[NameTree]) yield {
         part match {
@@ -63,7 +65,8 @@ object Parser {
     }
 
     private def storeSymbol(t: Tree, typ: String) = {
-      val sym = JSymbol(namespace(), positionToPos(t.pos), typ)
+      val ns = namespace()
+      val sym = JSymbol(ns, positionToPos(t.pos), typ)
       _symbols = sym :: _symbols
     }
 
@@ -78,7 +81,7 @@ object Parser {
           case _:ModuleDef =>
             storeSymbol(t, "object")
 
-          case _:ValOrDefDef =>
+          case v:ValOrDefDef if v.name.toString != "<init>" =>
             storeSymbol(t, "val")
 
           case TypeDef(mods, name, tparams, rhs) =>

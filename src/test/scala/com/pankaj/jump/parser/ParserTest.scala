@@ -104,6 +104,23 @@ class ParserSpec extends FlatSpec with Matchers {
     assert(symbols.exists(_.rfqn == List("StringAlias", "Inner", "Outer", "b", "a", "test")) == true)
   }
 
+  "parser" should "collect symbols correctly for case classes and objects" in {
+    val content = """
+    |package test
+    |
+    |object Outer {
+    | case class CC
+    | case object CO
+    |}
+    """
+
+    val path = getPathForContent(content)
+    val parser = new Parser
+    val symbols = parser.listSymbols(path)
+    assert(symbols.exists(_.rfqn == List("CC", "Outer", "test")) == true)
+    assert(symbols.exists(_.rfqn == List("CO", "Outer","test")) == true)
+  }
+
   "parser" should "collect package object correctly" in {
     val content = """
     |package test.a

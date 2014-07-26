@@ -92,7 +92,7 @@ class JumpDecider(parser: Parser, symbolTable: SymbolTable, fileTable: FileTable
         qual <- quals
       } {
         //val count = prefixMatchCount(choice.rfqn.reverse, qual) - qual.size
-        val count = prefixDistance(choice.rfqn.tail.reverse, qual)
+        val count = prefixDistance(qual, choice.rfqn.tail.reverse)
         //println(s"$count :: $choice :: $qual")
         if (count < choiceCount) {
           choiceCount = count
@@ -127,7 +127,10 @@ class JumpDecider(parser: Parser, symbolTable: SymbolTable, fileTable: FileTable
       case None =>
         val prefixMatches = tryLongestPrefixMatch()
         if (!prefixMatches.isEmpty) prefixMatches
-        else choices
+        else {
+          println("no match, falling back to all choices")
+          choices
+        }
     }
     (chosen flatMap { jshort =>
       jshort.toJSymbol{ id => fileTable.fileForId(id) }

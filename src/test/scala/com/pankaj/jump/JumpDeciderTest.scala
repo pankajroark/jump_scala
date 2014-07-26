@@ -36,7 +36,7 @@ class JumpDeciderSpec extends FlatSpec with Matchers with MockitoSugar {
     val parser = new Parser
     (new JumpDecider(parser, symbolTable, fileTable), path)
   }
-/*
+
   "parser" should "track down symbol correctly" in {
     val content = """
     |package com
@@ -78,8 +78,6 @@ class JumpDeciderSpec extends FlatSpec with Matchers with MockitoSugar {
     val chosen = jd.choose("Pos", Pos(path, 6, 12), choices)
     assert(chosen === expected)
   }
-  */
-
 
   "jump decider" should "handle renamed imports correctly" in {
     // todo test for the case where data is relooked up from symbol table
