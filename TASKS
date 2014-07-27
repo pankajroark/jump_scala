@@ -42,5 +42,7 @@ Unit Tests
  - For exact match
  - For prefix match
 
-Support a way of listing the closest matches
-Fix handling of case objects.
+S-u-p-p-o-r-t- -a- -w-a-y- -o-f- -l-i-s-t-i-n-g- -t-h-e- -c-l-o-s-e-s-t- -m-a-t-c-h-e-s
+F-i-x- -h-a-n-d-l-i-n-g- -o-f- -c-a-s-e- -o-b-j-e-c-t-s-.
+When listing multiple matches also show the content of respective lines
+Reduce memory consumption.

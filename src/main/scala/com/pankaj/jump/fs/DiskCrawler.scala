@@ -4,6 +4,7 @@ import com.pankaj.jump.Path
 import com.pankaj.jump.db.FileTable
 import com.pankaj.jump.util.ThreadActor
 import java.io.File
+import scala.annotation.tailrec
 
 case class FileInfo(path: Path, modStamp: Long)
 
@@ -20,11 +21,10 @@ class DiskCrawler(
     println("crawl")
     val roots = rootsTracker.roots
     roots foreach { root =>
-      crawl(root, isJavaOrScalaFile _){ fi =>
-        // todo use log here instead of println
-        // todo insert into File Table here
-        fileTable.addOrUpdateFileWithModStamp(fi)
-        //println(fi.path)
+      crawl(root){ f =>
+        if (isJavaOrScalaFile(f)) {
+          fileTable.addOrUpdateFileWithModStamp(f)
+        }
       }
     }
     dirtFinder.send(())
@@ -37,11 +37,12 @@ class DiskCrawler(
     }
 
   // Call f on each file under root
-  private def crawl(root: Path, filter: File => Boolean)(f: FileInfo => Unit) = {
+  private def crawl(root: Path)(fun: File => Unit) = {
     def go(dir: File): Unit = {
       for (child <- dir.listFiles) {
-        if(filter(child)) {
-          f(FileInfo(Path.fromString(child.getPath), child.lastModified))
+        fun(child)
+        if(child.isFile) {
+          fun(child)
         } else if (child.isDirectory) {
           go(child)
         }

@@ -3,6 +3,7 @@ package com.pankaj.jump.db
 import resource._
 import com.pankaj.jump.fs.FileInfo
 import com.pankaj.jump.Path
+import java.io.File
 
 class FileTable(val db: Db) extends Table {
   val name = "FILE_TABLE"
@@ -66,6 +67,12 @@ class FileTable(val db: Db) extends Table {
     // else create a new entry
     if (fileExists(fileInfo.path)) updateModStamp(fileInfo)
     else addFileWithModStamp(fileInfo)
+  }
+
+  def addOrUpdateFileWithModStamp(f: File) = {
+    val path = f.getPath
+    val modStamp = quote(f.lastModified.toString)
+    update(s"merge into $name (Path, ModStamp) KEY(Path) VALUES($path, $modStamp)")
   }
 
   // Returns a stream of results
