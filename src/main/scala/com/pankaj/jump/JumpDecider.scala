@@ -8,7 +8,7 @@ class JumpDecider(parserFactory: ParserFactory, symbolTable: SymbolTable, fileTa
   def choose(word: String, pos: Pos, choices: List[JSymbolShort]): List[JSymbol] = {
     val (imports, pkg) = parserFactory.get.trackDownSymbol(word, pos)
 
-    def tryFindExactMatchWithoutRenames(): Option[JSymbolShort] = {
+    def tryFindExactMatchWithoutRenames(): List[JSymbolShort] = {
       println("[INFO] tryFindExactMatchWithoutRenames called")
       val lookupNames = {
         val importNames = for{
@@ -26,19 +26,19 @@ class JumpDecider(parserFactory: ParserFactory, symbolTable: SymbolTable, fileTa
         symbol <- choices
         if (symbol.qualName == lName)
       } yield symbol
-      matchingSymbols.headOption
+      matchingSymbols
     }
 
-    def tryFindExactMatchWithRenames(): Option[JSymbolShort] = {
+    def tryFindExactMatchWithRenames(): List[JSymbolShort] = {
       println("[INFO] tryFindExactMatchWithRenames called")
-       (for{
-          j@JImport(qual, name, rename) <- imports
-          if word != name && word == rename
-          newChoices = symbolTable.symbolsForName(name)
-          choice <- newChoices.find(_.qualName == (name :: qual).reverse.mkString("."))
-        } yield {
-          choice
-        }).headOption
+      for{
+       j@JImport(qual, name, rename) <- imports
+       if word != name && word == rename
+       newChoices = symbolTable.symbolsForName(name)
+       choice <- newChoices.find(_.qualName == (name :: qual).reverse.mkString("."))
+      } yield {
+        choice
+      }
     }
 
     def tryLongestPrefixMatch(): List[JSymbolShort] = {
@@ -120,18 +120,10 @@ class JumpDecider(parserFactory: ParserFactory, symbolTable: SymbolTable, fileTa
      bestChoices.toList
     }
 
-    val exactlyChosen = tryFindExactMatchWithoutRenames() orElse tryFindExactMatchWithRenames()
-    // sort default choices
-    val chosen = exactlyChosen match {
-      case Some(choice) => List(choice)
-      case None =>
-        val prefixMatches = tryLongestPrefixMatch()
-        if (!prefixMatches.isEmpty) prefixMatches
-        else {
-          println("no match, falling back to all choices")
-          choices
-        }
-    }
+    val chosen:List[JSymbolShort] = tryFindExactMatchWithoutRenames() orElseUse
+    tryFindExactMatchWithRenames() orElseUse
+    tryLongestPrefixMatch() orElseUse
+    choices
     (chosen flatMap { jshort =>
       jshort.toJSymbol{ id => fileTable.fileForId(id) }
     }).toSet.toList

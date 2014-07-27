@@ -36,6 +36,17 @@ package object jump {
     }
   }
 
+  implicit def fallbackableList[A](xs: List[A]): FallbackableList[A] =
+    new FallbackableList(xs)
+
+  class FallbackableList[A](xs: List[A]) {
+    // Not naming it orElse to avoid conflict with existing
+    // function with that name
+    def orElseUse(ys: List[A]): List[A] =
+      if(xs.isEmpty) ys
+      else xs
+  }
+
   class Loc(path: Path, row: Int, col: Int)
 
 }
