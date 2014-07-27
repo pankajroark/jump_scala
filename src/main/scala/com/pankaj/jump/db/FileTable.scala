@@ -70,9 +70,10 @@ class FileTable(val db: Db) extends Table {
   }
 
   def addOrUpdateFileWithModStamp(f: File) = {
-    val path = f.getPath
-    val modStamp = quote(f.lastModified.toString)
-    update(s"merge into $name (Path, ModStamp) KEY(Path) VALUES($path, $modStamp)")
+    val path = quote(f.getPath)
+    val modStamp = f.lastModified.toString
+    val stmt = s"merge into $name (Path, ModStamp) KEY(Path) VALUES($path, $modStamp)"
+    update(stmt)
   }
 
   // Returns a stream of results
