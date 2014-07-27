@@ -4,7 +4,10 @@ import java.util.concurrent.ConcurrentLinkedQueue
 
 // Thread actor is a simple queue based actor that executes
 // messages on the queue until done
-class ThreadActor[A](processor: A => Unit, idleSleepMillis: Int = 1000) {
+class ThreadNonBlockingActor[A] (
+  processor: A => Unit,
+  idleSleepMillis: Int = 1000
+) extends ThreadActor[A] {
   private val queue = new ConcurrentLinkedQueue[A]
   private val loop = new Runnable {
     def run() = {

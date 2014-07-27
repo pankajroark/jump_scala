@@ -17,12 +17,15 @@ class DiskCrawler(
   fileTable: FileTable,
   dirtFinder: ThreadActor[Unit]
 ) extends (Unit => Unit) {
+
+  val Megabyte: Int = 1024 * 1024
+
   def apply(u: Unit) {
     println("crawl")
     val roots = rootsTracker.roots
     roots foreach { root =>
       crawl(root){ f =>
-        if (isJavaOrScalaFile(f)) {
+        if (isJavaOrScalaFile(f) && f.length < Megabyte) {
           fileTable.addOrUpdateFileWithModStamp(f)
         }
       }

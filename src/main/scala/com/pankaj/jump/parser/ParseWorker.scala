@@ -24,8 +24,7 @@ class ParseWorker(
     // remove existing entries from Symbol Table
     symbolTable.deleteSymbolsForFile(file)
     val procTs = System.currentTimeMillis
-    val symbols = parser.listSymbols(file)
-    symbols.foreach { symbolTable.addSymbol(_) }
+    parser.forSymbols(file)(sym => symbolTable.addSymbol(sym))
     fileTable.updateProcessStamp(file, procTs)
     // Mark processed in filetable
   }

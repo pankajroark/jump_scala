@@ -9,7 +9,7 @@ import com.pankaj.jump.{JumpDecider, JumpHandler, JumpService, Path}
 import com.pankaj.jump.parser.{Parser, ParseWorker}
 import com.pankaj.jump.fs.{DirtFinder, DiskCrawler, RootsTracker}
 import com.pankaj.jump.db.{Db, FileTable, RootsTable, SymbolTable}
-import com.pankaj.jump.util.ThreadActor
+import com.pankaj.jump.util.{ThreadNonBlockingActor, ThreadBlockingActor}
 
 object Jumper {
   def main(args:Array[String]): Unit = {
@@ -22,11 +22,12 @@ object Jumper {
     rootsTable.setUp()
     symbolTable.setUp()
     val rootsTracker = new RootsTracker(rootsTable)
-    val parseWorkerActor = new ThreadActor(new ParseWorker(fileTable, symbolTable, parser))
+    val parseWorkerActor = new ThreadBlockingActor(new ParseWorker(fileTable, symbolTable, parser), 10)
     parseWorkerActor.start()
-    val dirtFinderActor = new ThreadActor(new DirtFinder(fileTable, parseWorkerActor))
+    val dirtFinderActor = new ThreadNonBlockingActor(new DirtFinder(fileTable, parseWorkerActor))
     dirtFinderActor.start()
-    val diskCrawlerActor = new ThreadActor(
+    dirtFinderActor.send(())
+    val diskCrawlerActor = new ThreadNonBlockingActor(
       new DiskCrawler(rootsTracker, fileTable, dirtFinderActor)
     )
     diskCrawlerActor.start()

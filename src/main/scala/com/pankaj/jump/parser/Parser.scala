@@ -38,12 +38,12 @@ object Parser {
 
   import global._
 
-  class SymbolCollector extends Traverser {
+  class SymbolCollector(call: JSymbol => Unit) extends Traverser {
     import collection.mutable
     private val _path: mutable.Stack[Tree] = mutable.Stack()
-    private var _symbols: List[JSymbol] = Nil
+    //private var _symbols: List[JSymbol] = Nil
 
-    def symbols: List[JSymbol] = _symbols
+    //def symbols: List[JSymbol] = _symbols
 
     // blank namespace is error, ignore such elements
     // namespace is reverse fully qualified name
@@ -67,7 +67,8 @@ object Parser {
     private def storeSymbol(t: Tree, typ: String) = {
       val ns = namespace()
       val sym = JSymbol(ns, positionToPos(t.pos), typ)
-      _symbols = sym :: _symbols
+      call(sym)
+      //_symbols = sym :: _symbols
     }
 
     override def traverse(t: Tree) = {
@@ -206,11 +207,11 @@ class Parser {
   }
 
 
-  def listSymbols(file: Path): List[JSymbol] = {
+  def forSymbols(file: Path)(call: JSymbol => Unit) = {
     val tree = astForFile(file)
-    val symc = new SymbolCollector
+    val symc = new SymbolCollector(call)
     symc.traverse(tree)
-    symc.symbols
+    //symc.symbols
   }
 
 }
