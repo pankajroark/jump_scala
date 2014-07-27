@@ -31,7 +31,7 @@ case class JSymbolShort(rfqn: List[String], loc: PosShort, typ: String) {
 // todo rename qual to indicate reverse
 case class JImport(qual: List[String], name: String, rename: String)
 
-object Parser {
+class Parser {
   val settings = new Settings
   settings processArgumentString "-usejavacp"
   val global = Global(settings, new ConsoleReporter(settings))
@@ -128,13 +128,6 @@ object Parser {
 
   def positionToPos(pos: Position): Pos =
     Pos(pos.source.path, pos.line, pos.column)
-}
-
-// Parser parses a single file
-class Parser {
-  import Parser._
-
-  import global._
 
   // @return (Imports, Package)
   // package is reverse

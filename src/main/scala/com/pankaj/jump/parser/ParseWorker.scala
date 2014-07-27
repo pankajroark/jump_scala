@@ -10,8 +10,9 @@ import com.pankaj.jump.fs.FileInfo
 class ParseWorker(
   fileTable: FileTable,
   symbolTable: SymbolTable,
-  parser: Parser
+  parserFactory: ParserFactory
 ) extends (Path => Unit) {
+
 
   def apply(file: Path): Unit = {
     // First, check if the file still needs processing
@@ -24,7 +25,7 @@ class ParseWorker(
     // remove existing entries from Symbol Table
     symbolTable.deleteSymbolsForFile(file)
     val procTs = System.currentTimeMillis
-    parser.forSymbols(file)(sym => symbolTable.addSymbol(sym))
+    parserFactory.get.forSymbols(file)(sym => symbolTable.addSymbol(sym))
     fileTable.updateProcessStamp(file, procTs)
     // Mark processed in filetable
   }

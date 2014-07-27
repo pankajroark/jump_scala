@@ -1,12 +1,12 @@
 package com.pankaj.jump
 
-import com.pankaj.jump.parser.{JImport, JSymbol, JSymbolShort, PosShort, Pos, Parser}
+import com.pankaj.jump.parser._
 import com.pankaj.jump.db.{SymbolTable, FileTable}
 import scala.annotation.tailrec
 
-class JumpDecider(parser: Parser, symbolTable: SymbolTable, fileTable: FileTable) {
+class JumpDecider(parserFactory: ParserFactory, symbolTable: SymbolTable, fileTable: FileTable) {
   def choose(word: String, pos: Pos, choices: List[JSymbolShort]): List[JSymbol] = {
-    val (imports, pkg) = parser.trackDownSymbol(word, pos)
+    val (imports, pkg) = parserFactory.get.trackDownSymbol(word, pos)
 
     def tryFindExactMatchWithoutRenames(): Option[JSymbolShort] = {
       println("[INFO] tryFindExactMatchWithoutRenames called")
