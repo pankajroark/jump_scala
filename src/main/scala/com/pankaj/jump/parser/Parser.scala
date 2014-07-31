@@ -207,4 +207,12 @@ class Parser {
     //symc.symbols
   }
 
+  def listSymbols(file: Path): List[JSymbol] = {
+    var xs = List[JSymbol]()
+    forSymbols(file){ x =>
+      xs = x :: xs
+    }
+    xs
+  }
+
 }

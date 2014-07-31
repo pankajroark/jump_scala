@@ -68,6 +68,10 @@ class JumpService(
           okResponse(jumpResult)
         })
 
+      case Root / "crawl" =>
+        diskCrawler.send(())
+        Future{okResponse("crawl queued")}
+
       case Root / "dirty" =>
         val params = request.params
         Future.const(for {

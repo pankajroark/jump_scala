@@ -122,11 +122,12 @@ class JumpDecider(parserFactory: ParserFactory, symbolTable: SymbolTable, fileTa
 
     val chosen:List[JSymbolShort] = tryFindExactMatchWithoutRenames() orElseUse
     tryFindExactMatchWithRenames() orElseUse
-    tryLongestPrefixMatch() orElseUse
-    choices
-    (chosen flatMap { jshort =>
+    tryLongestPrefixMatch() orElseUse choices
+
+    val distinctOnLocation = chosen.groupBy(_.loc).map{_._2.head}.toList
+    (distinctOnLocation flatMap { jshort =>
       jshort.toJSymbol{ id => fileTable.fileForId(id) }
-    }).toSet.toList
+    })
     //choices.headOption
   }
 }
