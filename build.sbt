@@ -23,3 +23,5 @@ exportJars := true
 packSettings
 
 packMain := Map("jumpscala" -> "Jumper")
+
+net.virtualvoid.sbt.graph.Plugin.graphSettings

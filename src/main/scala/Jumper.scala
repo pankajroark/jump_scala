@@ -33,8 +33,11 @@ object Jumper {
     diskCrawlerActor.start()
 
     val timer = new ScheduledThreadPoolTimer()
-    // todo add a command line option for this
-    timer.schedule(1.minutes) {
+    val crawl_period_env = System.getenv("DISK_CRAWL_PERIOD")
+    val crawl_period =
+      if (crawl_period_env != null) crawl_period_env.toInt
+      else 60
+    timer.schedule(crawl_period.minutes) {
       try {
         diskCrawlerActor.send(())
         //fileTable.printFiles()
@@ -62,6 +65,7 @@ object Jumper {
     val file: Path = "/Users/pankajg/workspace/bc3/finagle/finagle-core/src/main/scala/com/twitter/finagle/Context.scala"
     println(Parser.parse(file).mkString("\n"))
     */
+    diskCrawlerActor.send(())
     Await.ready(server)
   }
 }
