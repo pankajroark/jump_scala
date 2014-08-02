@@ -1,11 +1,9 @@
-import com.twitter.finagle.{Http, Service}
 import com.twitter.util.{Await, Future}
 import com.twitter.util.ScheduledThreadPoolTimer
 import com.twitter.conversions.time._
 import java.net.InetSocketAddress
 import java.util.concurrent.ConcurrentLinkedQueue
-import org.jboss.netty.handler.codec.http._
-import com.pankaj.jump.{JumpDecider, JumpHandler, JumpService, Path}
+import com.pankaj.jump.{AltJumpService, JumpDecider, JumpHandler, Path}
 import com.pankaj.jump.parser.{Parser, ParserFactory, ParseWorker}
 import com.pankaj.jump.fs.{DirtFinder, DiskCrawler, RootsTracker}
 import com.pankaj.jump.db.{Db, FileTable, RootsTable, SymbolTable}
@@ -53,19 +51,17 @@ object Jumper {
 
     val jumpDecider = new JumpDecider(parserFactory, symbolTable, fileTable)
     val jumpHandler = new JumpHandler(jumpDecider, symbolTable)
-    val jumpService = new JumpService(
+    val port_env = System.getenv("PORT")
+    val port = if (port_env != null) port_env.toInt else 8081
+
+    val altJumpService = new AltJumpService(
       rootsTracker,
       jumpHandler,
       parseWorkerActor,
-      diskCrawlerActor
+      diskCrawlerActor,
+      8081
     )
-    val server = Http.serve(":8081", jumpService)
-
-    /*
-    val file: Path = "/Users/pankajg/workspace/bc3/finagle/finagle-core/src/main/scala/com/twitter/finagle/Context.scala"
-    println(Parser.parse(file).mkString("\n"))
-    */
+    altJumpService.start()
     diskCrawlerActor.send(())
-    Await.ready(server)
   }
 }
