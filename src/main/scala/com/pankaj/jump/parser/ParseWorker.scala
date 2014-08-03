@@ -26,6 +26,7 @@ class ParseWorker(
     symbolTable.deleteSymbolsForFile(file)
     val procTs = System.currentTimeMillis
     parserFactory.get.forSymbols(file)(sym => symbolTable.addSymbol(sym))
+    // todo add logic to record identifiers
     fileTable.updateProcessStamp(file, procTs)
     // Mark processed in filetable
   }
