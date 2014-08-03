@@ -14,6 +14,7 @@ import java.io.PrintWriter
 class AltJumpService(
   rootsTracker: RootsTracker,
   jumpHandler: JumpHandler,
+  findHandler: FindHandler,
   parseWorker: ThreadActor[Path],
   diskCrawler: ThreadActor[Unit],
   port: Int
@@ -88,6 +89,7 @@ class AltJumpService(
         }
       case "/roots" =>
         Right(rootsTracker.roots.mkString("\n"))
+
       case "/jump" =>
         val result = for {
           symbol <- params.get("symbol").toTry(new Exception("symbol not supplied"))
@@ -100,6 +102,20 @@ class AltJumpService(
           jumpResult
         }
         tryToEither(result)
+
+      case "/find" =>
+        val result = for {
+          symbol <- params.get("symbol").toTry(new Exception("symbol not supplied"))
+          file <- params.get("file").toTry(new Exception("file not supplied"))
+          row <- params.get("row").toTry(new Exception("row not supplied")) map (_.toInt)
+          col <- params.get("col").toTry(new Exception("col not supplied")) map (_.toInt)
+          findResult <- findHandler.find(symbol, file, row, col)
+        } yield {
+          println(s"find result :: $findResult")
+          findResult
+        }
+        tryToEither(result)
+
       case "/crawl" =>
         diskCrawler.send(())
         Right("crawl queued")

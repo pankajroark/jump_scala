@@ -3,7 +3,7 @@ import com.twitter.util.ScheduledThreadPoolTimer
 import com.twitter.conversions.time._
 import java.net.InetSocketAddress
 import java.util.concurrent.ConcurrentLinkedQueue
-import com.pankaj.jump.{AltJumpService, JumpDecider, JumpHandler, Path}
+import com.pankaj.jump.{AltJumpService, JumpDecider, JumpHandler, FindHandler, Path}
 import com.pankaj.jump.parser.{Parser, ParserFactory, ParseWorker}
 import com.pankaj.jump.fs.{DirtFinder, DiskCrawler, RootsTracker}
 import com.pankaj.jump.db.{Db, FileTable, RootsTable, SymbolTable}
@@ -51,12 +51,14 @@ object Jumper {
 
     val jumpDecider = new JumpDecider(parserFactory, symbolTable, fileTable)
     val jumpHandler = new JumpHandler(jumpDecider, symbolTable)
+    val findHandler = new FindHandler(symbolTable)
     val port_env = System.getenv("PORT")
     val port = if (port_env != null) port_env.toInt else 8081
 
     val altJumpService = new AltJumpService(
       rootsTracker,
       jumpHandler,
+      findHandler,
       parseWorkerActor,
       diskCrawlerActor,
       8081
