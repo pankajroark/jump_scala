@@ -6,18 +6,23 @@ import java.util.concurrent.ConcurrentLinkedQueue
 import com.pankaj.jump.{AltJumpService, JumpDecider, JumpHandler, FindHandler, Path}
 import com.pankaj.jump.parser.{Parser, ParserFactory, ParseWorker}
 import com.pankaj.jump.fs.{DirtFinder, DiskCrawler, RootsTracker}
-import com.pankaj.jump.db.{Db, FileTable, RootsTable, SymbolTable}
+import com.pankaj.jump.db.{Db, FileTable, IdentTable, RootsTable, SymbolTable}
 import com.pankaj.jump.util.{ThreadNonBlockingActor, ThreadBlockingActor}
 
 object Jumper {
   def main(args:Array[String]): Unit = {
+    // tables
     val db = new Db
     val fileTable = new FileTable(db)
     val rootsTable = new RootsTable(db)
     val symbolTable = new SymbolTable(db, fileTable)
+    val identTable = new IdentTable(db)
     fileTable.setUp()
     rootsTable.setUp()
     symbolTable.setUp()
+    identTable.setUp()
+
+    // workers
     val parserFactory = new ParserFactory
     val rootsTracker = new RootsTracker(rootsTable)
     val parseWorkerActor = new ThreadBlockingActor(new ParseWorker(fileTable, symbolTable, parserFactory), 10)
