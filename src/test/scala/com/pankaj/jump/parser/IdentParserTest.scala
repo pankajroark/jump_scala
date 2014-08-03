@@ -24,34 +24,31 @@ class IdentParserSpec extends FlatSpec with Matchers {
     IdentParser.parse(file, ic)
     val expected = List(
       Ident("identifierA", 1, 5),
-      Ident("identifierB", 1, 19),
-      Ident("func", 1, 31)
+      Ident("identifierB", 1, 19)
     )
     assert(expected === ic.idents)
   }
 
   "parser" should "parse correctly when identifier begins with _" in {
-    val content = """ _idt = 30"""
+    val content = """ _idtA = 30"""
 
     val file = getFileWithContent(content)
     val ic = new IdentCollector
     IdentParser.parse(file, ic)
     val expected = List(
-      Ident("_idt", 1, 2),
-      Ident("30", 1, 9)
+      Ident("_idtA", 1, 2)
     )
     assert(expected === ic.idents)
   }
 
   "parser" should "parse correctly when identifier not at beginning" in {
-    val content = """ { _idt = 30 } """
+    val content = """ { _idtA = 30 } """
 
     val file = getFileWithContent(content)
     val ic = new IdentCollector
     IdentParser.parse(file, ic)
     val expected = List(
-      Ident("_idt", 1, 4),
-      Ident("30", 1, 11)
+      Ident("_idtA", 1, 4)
     )
     assert(expected === ic.idents)
   }
@@ -64,9 +61,7 @@ class IdentParserSpec extends FlatSpec with Matchers {
     IdentParser.parse(file, ic)
     val expected = List(
       Ident("_idtA", 1, 1),
-      Ident("30", 1, 9),
-      Ident("_idtB", 2, 1),
-      Ident("40", 2, 9)
+      Ident("_idtB", 2, 1)
     )
     assert(expected === ic.idents)
   }

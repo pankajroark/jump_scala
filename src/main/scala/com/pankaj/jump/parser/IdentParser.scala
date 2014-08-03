@@ -14,7 +14,7 @@ trait IdentParserObserver {
 
 case class Ident(ident: String, row: Int, col: Int)
 
-class IdentCollector extends IdentParserObserver {
+object IdentCollector {
   val BlackList = Set(
     "abstract",
     "case",
@@ -58,6 +58,11 @@ class IdentCollector extends IdentParserObserver {
     "_"
   )
 
+  val MinIdentifierLength = 5
+}
+
+class IdentCollector extends IdentParserObserver {
+
   var _row = 0
   val _ibs = ListBuffer[Ident]()
   var _idents = List[Ident]()
@@ -74,7 +79,11 @@ class IdentCollector extends IdentParserObserver {
     _startIdent = col
   }
   def endIdent(ident: String, col: Int) = {
-    if(!BlackList.contains(ident)) {
+    import IdentCollector._
+    if(
+      !BlackList.contains(ident) &&
+      ident.size >= MinIdentifierLength
+    ) {
       // both row and col are 1 based
       _ibs += Ident(ident, _row, _startIdent)
     }
