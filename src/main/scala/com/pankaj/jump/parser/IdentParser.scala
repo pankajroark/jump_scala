@@ -58,7 +58,7 @@ object IdentCollector {
     "_"
   )
 
-  val MinIdentifierLength = 5
+  val MinIdentifierLength = 4
 }
 
 class IdentCollector extends IdentParserObserver {

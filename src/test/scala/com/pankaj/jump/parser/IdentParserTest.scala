@@ -24,7 +24,8 @@ class IdentParserSpec extends FlatSpec with Matchers {
     IdentParser.parse(file, ic)
     val expected = List(
       Ident("identifierA", 1, 5),
-      Ident("identifierB", 1, 19)
+      Ident("identifierB", 1, 19),
+      Ident("func", 1, 31)
     )
     assert(expected === ic.idents)
   }
