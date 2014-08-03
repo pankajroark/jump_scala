@@ -1,6 +1,5 @@
 package com.pankaj.jump
 
-import com.twitter.finagle.{Http, Service}
 import com.twitter.util.{Await, Future}
 
 import org.scalatest.FlatSpec
@@ -9,8 +8,6 @@ import org.scalatest.mock.MockitoSugar
 import org.mockito.Matchers._
 import org.mockito.Mockito._
 
-import org.jboss.netty.handler.codec.http._
-import org.jboss.netty.buffer.ChannelBuffers
 import com.pankaj.jump.parser._
 import com.pankaj.jump.db._
 import java.io.{File, PrintWriter}

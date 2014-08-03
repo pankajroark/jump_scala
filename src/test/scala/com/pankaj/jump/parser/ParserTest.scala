@@ -1,12 +1,9 @@
 package com.pankaj.jump.parser
 
-import com.twitter.finagle.{Http, Service}
 import com.twitter.util.{Await, Future}
 
 import org.scalatest.FlatSpec
 import org.scalatest.Matchers
-import org.jboss.netty.handler.codec.http._
-import org.jboss.netty.buffer.ChannelBuffers
 import com.pankaj.jump._
 import java.io.{File, PrintWriter}
 
@@ -173,4 +170,20 @@ class ParserSpec extends FlatSpec with Matchers {
     val symbols = parser.listSymbols(path)
     println(symbols)
   }
+
+  /*
+  "parser" should "parse simple variable use correctly" in {
+    val content = """
+    |class Test {
+    |  val x = 1
+    |  def retx = x
+    |}
+    """
+
+    val path = getPathForContent(content)
+    val parser = new Parser
+    val symbols = parser.listSymbols(path)
+    println(symbols.mkString("\n"))
+  }
+  */
 }

@@ -51,7 +51,7 @@ object Jumper {
 
     val jumpDecider = new JumpDecider(parserFactory, symbolTable, fileTable)
     val jumpHandler = new JumpHandler(jumpDecider, symbolTable)
-    val findHandler = new FindHandler(symbolTable)
+    val findHandler = new FindHandler(symbolTable, rootsTable, fileTable)
     val port_env = System.getenv("PORT")
     val port = if (port_env != null) port_env.toInt else 8081
 

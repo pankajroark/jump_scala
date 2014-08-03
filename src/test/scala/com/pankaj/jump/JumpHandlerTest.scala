@@ -1,6 +1,5 @@
 package com.pankaj.jump
 
-import com.twitter.finagle.{Http, Service}
 import com.twitter.util.{Await, Future}
 import com.twitter.io.TempDirectory
 

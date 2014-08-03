@@ -5,7 +5,7 @@ import com.pankaj.jump.Path
 import scala.tools.nsc.ast.parser.Parsers
 import scala.tools.nsc.{Global, Settings}
 import scala.tools.nsc.reporters.ConsoleReporter
-import scala.reflect.internal.util.BatchSourceFile
+import scala.reflect.internal.util.{BatchSourceFile, NoSourceFile}
 import scala.io.Source
 import scala.annotation.tailrec
 
@@ -41,9 +41,6 @@ class Parser {
   class SymbolCollector(call: JSymbol => Unit) extends Traverser {
     import collection.mutable
     private val _path: mutable.Stack[Tree] = mutable.Stack()
-    //private var _symbols: List[JSymbol] = Nil
-
-    //def symbols: List[JSymbol] = _symbols
 
     // blank namespace is error, ignore such elements
     // namespace is reverse fully qualified name
@@ -87,6 +84,20 @@ class Parser {
 
           case TypeDef(mods, name, tparams, rhs) =>
             storeSymbol(t, "type")
+
+            /*
+          case i:Ident  =>
+            println(i.getClass.getName)
+            val name = i.name.toString
+            if (
+              name != "scala" &&
+              name != "<empty>" &&
+              i.pos != NoPosition &&
+              i.pos.source != NoSourceFile
+            ) {
+              storeSymbol(i, "ident")
+            }
+            */
 
           case _ =>
         }
