@@ -2,14 +2,16 @@ package com.pankaj.jump.parser
 
 import java.io.{File, FileReader, BufferedReader}
 import scala.collection.mutable.ListBuffer
+import scala.collection.mutable
+import scala.collection.immutable
 
 trait IdentParserObserver {
-  def start()
-  def startLine(row: Int)
-  def endLine(row: Int)
-  def startIdent(col: Int)
-  def endIdent(ident: String, col: Int)
-  def end()
+  def start(): Unit
+  def startLine(row: Int): Unit
+  def endLine(row: Int): Unit
+  def startIdent(col: Int): Unit
+  def endIdent(ident: String, col: Int): Unit
+  def end(): Unit
 }
 
 case class Ident(ident: String, row: Int, col: Int)
@@ -59,6 +61,10 @@ object IdentCollector {
   )
 
   val MinIdentifierLength = 4
+
+  def isValidIdent(ident: String): Boolean =
+    !BlackList.contains(ident) &&
+    ident.size >= MinIdentifierLength
 }
 
 class IdentCollector extends IdentParserObserver {
@@ -78,16 +84,11 @@ class IdentCollector extends IdentParserObserver {
   def startIdent(col: Int) = {
     _startIdent = col
   }
-  def endIdent(ident: String, col: Int) = {
-    import IdentCollector._
-    if(
-      !BlackList.contains(ident) &&
-      ident.size >= MinIdentifierLength
-    ) {
+  def endIdent(ident: String, col: Int) =
+    if(IdentCollector.isValidIdent(ident)) {
       // both row and col are 1 based
       _ibs += Ident(ident, _row, _startIdent)
     }
-  }
 
   def end() = {
     _idents = _ibs.toList
@@ -95,6 +96,23 @@ class IdentCollector extends IdentParserObserver {
 
 }
 
+class UniqueIdentFinder extends IdentParserObserver {
+
+  val _identBuilder = new mutable.HashSet[String]
+  def idents: Set[String] = _identBuilder.toSet
+
+  def start() = {}
+  def startLine(row: Int) = {}
+  def endLine(number: Int) = {}
+  def startIdent(col: Int) = {}
+
+  def endIdent(ident: String, col: Int) =
+    if(IdentCollector.isValidIdent(ident))
+      _identBuilder += ident
+
+  def end() = {}
+
+}
 object IdentParser {
   def parse(file: File, ob: IdentParserObserver): Unit = {
     val reader = new BufferedReader(new FileReader(file))
