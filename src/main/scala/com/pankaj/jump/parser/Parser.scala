@@ -85,20 +85,6 @@ class Parser {
           case TypeDef(mods, name, tparams, rhs) =>
             storeSymbol(t, "type")
 
-            /*
-          case i:Ident  =>
-            println(i.getClass.getName)
-            val name = i.name.toString
-            if (
-              name != "scala" &&
-              name != "<empty>" &&
-              i.pos != NoPosition &&
-              i.pos.source != NoSourceFile
-            ) {
-              storeSymbol(i, "ident")
-            }
-            */
-
           case _ =>
         }
         super.traverse(t)

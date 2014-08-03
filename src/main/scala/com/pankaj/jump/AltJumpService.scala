@@ -27,29 +27,33 @@ class AltJumpService(
     val thread = new Thread(new Runnable {
       def run() = {
         while(!serverSocket.isClosed) {
+          val socket = serverSocket.accept()
           try {
-            val socket = serverSocket.accept()
             socket.setSoTimeout(5000)
             val reader = new BufferedReader(new InputStreamReader(socket.getInputStream))
             val line = reader.readLine()
             val Array(method, uri, version) = line.split(' ')
             val response = handler(uri)
             val pw = new PrintWriter(socket.getOutputStream);
-            response match {
-              case Left(status) =>
-                pw.print(genHttpResponse(status))
-              case Right(msg) =>
-                println(genHttpResponse(200, msg))
-                pw.print(genHttpResponse(200, msg))
+            try {
+              response match {
+                case Left(status) =>
+                  pw.print(genHttpResponse(status))
+                case Right(msg) =>
+                  println(genHttpResponse(200, msg))
+                  pw.print(genHttpResponse(200, msg))
+              }
+              pw.flush()
+            } finally {
+              pw.close()
+              reader.close()
             }
-            pw.flush()
-            pw.close()
-            reader.close()
-            socket.close()
           } catch {
             case e: Throwable =>
               e.printStackTrace
               println("ate exception")
+          } finally {
+            socket.close()
           }
         }
       }
