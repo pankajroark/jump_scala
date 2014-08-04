@@ -1,6 +1,6 @@
 package com.pankaj.jump.db
 
-import com.pankaj.jump.Path
+import com.pankaj.jump.{Path, hash}
 import com.pankaj.jump.parser.{Pos, JSymbol, PosShort, JSymbolShort}
 import java.sql.ResultSet
 
@@ -13,41 +13,30 @@ class InvertedIdentIndexTable(
 
   //Unique Id | name | qualified name | filepath | type | row | col
   val createString = s"create table $name(" +
-    "IdentId int not null, " +
-    "FileId int not null, " +
-    "Primary Key (FileId, IdentId)" +
+    "Ident varchar(1024) not null, " +
+    "FileId bigint not null, " +
+    "Primary Key (FileId, Ident)" +
     ")"
 
   override val indexInfo = Map(
     "FILE_ID_INDEX" -> List("FileId"),
-    "IDENT_ID_INDEX" -> List("IdentId")
+    "IDENT_ID_INDEX" -> List("Ident")
   )
 
   def addFileIdent(file: String, ident: String) = {
-    for{
-      fileId <- fileTable.idForFile(file)
-      identId <- identTable.idForName(ident)
-    } {
-      val lookupQuery =
-        s"select * from $name where IdentId=$identId and FileId=$fileId"
-      if (!queryHasResults(lookupQuery)) {
-        update(s"insert into $name values($identId, $fileId)")
-      }
-    }
+    val fileNameHash = hash(file)
+    update(s"insert into $name values(${quote(ident)}, $fileNameHash)")
   }
 
-  def filesForIdent(identId: Int): List[Int] = {
-    query(s"select FileId from $name where IdentId=$identId") { rs =>
-      rs.getInt("FileId")
-    }
-  }
 
   def filesForIdent(ident: String): List[Path] = {
-    for{
-      identId <- identTable.idForName(ident).toList
-      fileId <- filesForIdent(identId)
-      file <- fileTable.fileForId(fileId)
-    } yield file
+    val fileIds = query(s"select FileId from $name where Ident=${quote(ident)}") { rs =>
+      rs.getLong("FileId")
+    }
+    for {
+      fileId <- fileIds
+      path <- fileTable.fileForId(fileId)
+    } yield path
   }
 
 }

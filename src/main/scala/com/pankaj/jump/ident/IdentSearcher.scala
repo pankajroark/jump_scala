@@ -8,7 +8,7 @@ import scala.collection.mutable.ListBuffer
 class IdentSearcher(invIdentIndexTable: InvertedIdentIndexTable) {
   def search(ident: String): List[Pos] = {
     val paths = invIdentIndexTable.filesForIdent(ident)
-    println(s"paths :: $paths")
+    //println(s"paths :: $paths")
     // Now search in all these files and get positions
     for{
       path <- paths
@@ -19,7 +19,7 @@ class IdentSearcher(invIdentIndexTable: InvertedIdentIndexTable) {
   }
 
   def searchIdentInFile(file: File, ident: String): List[(Int, Int)] = {
-    println(s" File -> $file.getPath, ident -> $ident")
+    //println(s" File -> $file.getPath, ident -> $ident")
     val reader = new BufferedReader(new FileReader(file))
     var line = ""
     var locations = new ListBuffer[(Int, Int)]()
@@ -27,7 +27,7 @@ class IdentSearcher(invIdentIndexTable: InvertedIdentIndexTable) {
     while(true) {
       line = reader.readLine
       if (line == null) {
-        println(locations.toList.mkString(",\n"))
+        //println(locations.toList.mkString(",\n"))
         return locations.toList
       } else {
         row += 1
@@ -37,7 +37,7 @@ class IdentSearcher(invIdentIndexTable: InvertedIdentIndexTable) {
           matchIndex = line.indexOf(ident, fromIndex)
           // println(s" $matchIndex : $fromIndex")
           if (matchIndex != -1) {
-            println(line)
+            //println(line)
             locations += ((row, matchIndex + 1))
             fromIndex = matchIndex + ident.size
           }

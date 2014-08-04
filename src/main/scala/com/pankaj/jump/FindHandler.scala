@@ -15,9 +15,9 @@ class FindHandler(
     closestRoot(file) match{
       case None => Throw(new Exception("file not under any root"))
       case Some(root) =>
-        println(s"Root >>>>> $root")
+        //println(s"Root >>>>> $root")
         val matches = identSearcher.search(word)
-        println(s"matches >>>>>>>>> $matches")
+        //println(s"matches >>>>>>>>> $matches")
         val matching = for {
           l <- matches
           if l.file.toString.startsWith(root)

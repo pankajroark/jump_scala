@@ -43,7 +43,7 @@ class IdentTable(val db: Db) extends Table {
     query(s"select * from $name") { rs =>
       val n = rs.getString("Name")
       val id = rs.getInt("Id")
-      println(s"$n :: $id")
+      //println(s"$n :: $id")
     }
   }
 

@@ -28,7 +28,7 @@ class JumpDeciderSpec extends FlatSpec with Matchers with MockitoSugar {
     val symbolTable = mock[SymbolTable]
     when(symbolTable.symbolsForName(anyString())).thenReturn(choices)
     val fileTable = mock[FileTable]
-    when(fileTable.idForFile(path)).thenReturn(Some(1))
+    when(fileTable.idForFile(path)).thenReturn(Some(1L))
     when(fileTable.fileForId(anyInt())).thenReturn(Some(path))
     (new JumpDecider(new ParserFactory, symbolTable, fileTable), path)
   }

@@ -13,7 +13,7 @@ class SymbolTable(val db: Db, fileTable: FileTable) extends Table {
     "Id int not null AUTO_INCREMENT PRIMARY KEY, " +
     "Name varchar(1024) not null, " +
     "QualName varchar(1024) not null, " +
-    "FileId Int not null, " +
+    "FileId bigint not null, " +
     "Type varchar(64) not null, " +
     "Row int not null, " +
     "Col int not null" +
@@ -49,7 +49,7 @@ class SymbolTable(val db: Db, fileTable: FileTable) extends Table {
   def rowToJSymbol(rs: ResultSet): JSymbolShort = {
     val qname = rs.getString("QualName")
     val rfqn = qname.split('.').reverse.toList
-    val fileId = rs.getInt("FileId")
+    val fileId = rs.getLong("FileId")
     val row = rs.getInt("Row")
     val col = rs.getInt("Col")
     val typ = rs.getString("Type")

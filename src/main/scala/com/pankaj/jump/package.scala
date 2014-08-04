@@ -49,4 +49,12 @@ package object jump {
 
   class Loc(path: Path, row: Int, col: Int)
 
+  def hash(s: String): Long = {
+    var h = 1125899906842597L
+    for (i <- 0 until s.size) {
+      h = 31*h + s(i);
+    }
+    h
+  }
+
 }

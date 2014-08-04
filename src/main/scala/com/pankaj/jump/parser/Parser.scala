@@ -10,7 +10,7 @@ import scala.io.Source
 import scala.annotation.tailrec
 
 case class Pos(file: Path, row: Int, col: Int)
-case class PosShort(fileId: Int, row: Int, col: Int)
+case class PosShort(fileId: Long, row: Int, col: Int)
 
 // @param rfqn  reverse fully qualified name e.g. "util" : "twitter" : "com"
 // JSymbol stands for Jump Symbol, longer name to avoid confusion with global.Symbol
@@ -22,7 +22,7 @@ case class JSymbol(rfqn: List[String], loc: Pos, typ: String) {
 case class JSymbolShort(rfqn: List[String], loc: PosShort, typ: String) {
   def name = rfqn.head
   def qualName = rfqn.reverse.mkString(".")
-  def toJSymbol(idToFile: Int => Option[Path]): Option[JSymbol] =
+  def toJSymbol(idToFile: Long => Option[Path]): Option[JSymbol] =
     for(file <- idToFile(loc.fileId)) yield
       JSymbol(rfqn, Pos(file, loc.row, loc.col), typ)
 }

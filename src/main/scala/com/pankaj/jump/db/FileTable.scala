@@ -2,7 +2,7 @@ package com.pankaj.jump.db
 
 import resource._
 import com.pankaj.jump.fs.FileInfo
-import com.pankaj.jump.Path
+import com.pankaj.jump.{Path, hash}
 import java.io.File
 
 class FileTable(val db: Db) extends Table {
@@ -12,12 +12,12 @@ class FileTable(val db: Db) extends Table {
     "Path varchar(1024) not null PRIMARY KEY, " +
     "ModStamp bigint not null, " +
     "ProcessStamp bigint, " +
-     "Imports varchar(60000), " +
-     "Id int not null AUTO_INCREMENT" +
+    "Imports varchar(60000), " +
+    "Id bigint not null" +
     ")"
 
   override val indexInfo = Map(
-    "FILE_ID_INDEX" -> List("Id")
+    "ID_INDEX" -> List("Id")
   )
 
   def fileExists(file: Path): Boolean = {
@@ -25,17 +25,17 @@ class FileTable(val db: Db) extends Table {
     queryHasResults(s"select * from $name where Path=$path")
   }
 
-  def idForFile(file: Path): Option[Int] =
+  def idForFile(file: Path): Option[Long] =
     idForFile(file.toString)
 
-  def idForFile(file: String): Option[Int] = {
+  def idForFile(file: String): Option[Long] = {
     val path = quote(file)
     (query(s"select Id from $name where Path=$path") { rs =>
-      rs.getInt(1)
+      rs.getLong(1)
     }).headOption
   }
 
-  def fileForId(id: Int): Option[Path] = {
+  def fileForId(id: Long): Option[Path] = {
     (query(s"select Path from $name where Id=$id") { rs =>
       Path.fromString(rs.getString(1))
     }).headOption
@@ -50,8 +50,12 @@ class FileTable(val db: Db) extends Table {
 
   def addFileWithModStamp(fileInfo: FileInfo) = {
     val file = quote(fileInfo.path.toString)
+    val fileNameHash = hash(file)
     val modStamp = fileInfo.modStamp.toString
-    update(s"insert into $name (Path, ModStamp, ProcessStamp) values ($file, $modStamp, 0)")
+    update(
+      s"insert into $name (Path, ModStamp, ProcessStamp, Id)" +
+      s"values ($file, $modStamp, 0, $fileNameHash)"
+    )
   }
 
   def updateProcessStamp(path: Path, procTs: Long) = {
@@ -73,9 +77,11 @@ class FileTable(val db: Db) extends Table {
   }
 
   def addOrUpdateFileWithModStamp(f: File) = {
-    val path = quote(f.getPath)
+    val fileName = f.getPath
+    val fileNameHash = hash(fileName)
+    val path = quote(fileName)
     val modStamp = f.lastModified.toString
-    val stmt = s"merge into $name (Path, ModStamp) KEY(Path) VALUES($path, $modStamp)"
+    val stmt = s"merge into $name (Path, ModStamp, Id) KEY(Path) VALUES($path, $modStamp, $fileNameHash)"
     update(stmt)
   }
 
