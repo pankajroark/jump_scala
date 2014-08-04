@@ -6,8 +6,9 @@ import java.util.concurrent.ConcurrentLinkedQueue
 import com.pankaj.jump.{AltJumpService, JumpDecider, JumpHandler, FindHandler, Path}
 import com.pankaj.jump.parser.{Parser, ParserFactory, ParseWorker}
 import com.pankaj.jump.fs.{DirtFinder, DiskCrawler, RootsTracker}
-import com.pankaj.jump.db.{Db, FileTable, IdentTable, RootsTable, SymbolTable}
+import com.pankaj.jump.db.{Db, FileTable, IdentTable, InvertedIdentIndexTable, RootsTable, SymbolTable}
 import com.pankaj.jump.util.{ThreadNonBlockingActor, ThreadBlockingActor}
+import com.pankaj.jump.ident.{IdentRecorder, IdentSearcher}
 
 object Jumper {
   def main(args:Array[String]): Unit = {
@@ -17,15 +18,18 @@ object Jumper {
     val rootsTable = new RootsTable(db)
     val symbolTable = new SymbolTable(db, fileTable)
     val identTable = new IdentTable(db)
+    val identIndexTable = new InvertedIdentIndexTable(db, identTable, fileTable)
     fileTable.setUp()
     rootsTable.setUp()
     symbolTable.setUp()
     identTable.setUp()
+    identIndexTable.setUp()
 
     // workers
     val parserFactory = new ParserFactory
     val rootsTracker = new RootsTracker(rootsTable)
-    val parseWorkerActor = new ThreadBlockingActor(new ParseWorker(fileTable, symbolTable, parserFactory), 10)
+    val identRecorder = new IdentRecorder(identTable, identIndexTable)
+    val parseWorkerActor = new ThreadBlockingActor(new ParseWorker(fileTable, symbolTable, parserFactory, identRecorder), 10)
     parseWorkerActor.start()
     val dirtFinderActor = new ThreadNonBlockingActor(new DirtFinder(fileTable, parseWorkerActor))
     dirtFinderActor.start()
@@ -56,7 +60,8 @@ object Jumper {
 
     val jumpDecider = new JumpDecider(parserFactory, symbolTable, fileTable)
     val jumpHandler = new JumpHandler(jumpDecider, symbolTable)
-    val findHandler = new FindHandler(symbolTable, rootsTable, fileTable)
+    val identSearcher = new IdentSearcher(identIndexTable)
+    val findHandler = new FindHandler(rootsTable, identSearcher)
     val port_env = System.getenv("PORT")
     val port = if (port_env != null) port_env.toInt else 8081
 

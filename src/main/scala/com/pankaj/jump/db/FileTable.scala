@@ -17,7 +17,7 @@ class FileTable(val db: Db) extends Table {
     ")"
 
   override val indexInfo = Map(
-    "ID_INDEX" -> List("Id")
+    "FILE_ID_INDEX" -> List("Id")
   )
 
   def fileExists(file: Path): Boolean = {
@@ -25,8 +25,11 @@ class FileTable(val db: Db) extends Table {
     queryHasResults(s"select * from $name where Path=$path")
   }
 
-  def idForFile(file: Path): Option[Int] = {
-    val path = quote(file.toString)
+  def idForFile(file: Path): Option[Int] =
+    idForFile(file.toString)
+
+  def idForFile(file: String): Option[Int] = {
+    val path = quote(file)
     (query(s"select Id from $name where Path=$path") { rs =>
       rs.getInt(1)
     }).headOption

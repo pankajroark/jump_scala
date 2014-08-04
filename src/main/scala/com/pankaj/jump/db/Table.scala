@@ -35,7 +35,10 @@ trait Table {
 
   def ensureIndicesExist() {
     val curIndices = existingIndices()
-    for ( (indexName, cols) <- indexInfo) {
+    val tableIndexInfo = for((idxName, cols) <- indexInfo ) yield {
+      (name + "_" + idxName, cols)
+    }
+    for ( (indexName, cols) <- tableIndexInfo) {
       if (!curIndices.contains(indexName)) {
         val colsStr = cols.mkString("(", ",", ")")
         val createStr = s"create index $indexName on $name $colsStr"

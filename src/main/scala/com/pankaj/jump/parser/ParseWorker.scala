@@ -4,13 +4,15 @@ import java.util.concurrent.ConcurrentLinkedQueue
 import com.pankaj.jump.Path
 import com.pankaj.jump.db.{FileTable, SymbolTable}
 import com.pankaj.jump.fs.FileInfo
+import com.pankaj.jump.ident.IdentRecorder
 
 // ParserWorker reads dirty files from the dirt queue, parses them and inserts
 // qualified symbols in the Symbol table
 class ParseWorker(
   fileTable: FileTable,
   symbolTable: SymbolTable,
-  parserFactory: ParserFactory
+  parserFactory: ParserFactory,
+  identRecorder: IdentRecorder
 ) extends (Path => Unit) {
 
 
@@ -26,6 +28,7 @@ class ParseWorker(
     symbolTable.deleteSymbolsForFile(file)
     val procTs = System.currentTimeMillis
     parserFactory.get.forSymbols(file)(sym => symbolTable.addSymbol(sym))
+    identRecorder.record(file)
     // todo add logic to record identifiers
     fileTable.updateProcessStamp(file, procTs)
     // Mark processed in filetable

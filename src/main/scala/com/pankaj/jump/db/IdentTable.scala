@@ -14,15 +14,16 @@ class IdentTable(val db: Db) extends Table {
     ")"
 
   override val indexInfo = Map(
-    "NAME_INDEX" -> List("Name")
+    "ID_INDEX" -> List("Id")
   )
 
   def addIdent(s: String) = {
-    update(s"insert into $name values(null, $s)")
+    val ident = quote(s)
+    update(s"insert into $name values(null, $ident)")
   }
 
-  def idForName(name: String): Option[Int] = {
-    (query(s"select Id from $name where Name=${quote(name)}") { rs =>
+  def idForName(n: String): Option[Int] = {
+    (query(s"select Id from $name where Name=${quote(n)}") { rs =>
       rs.getInt("Id")
     }).headOption
   }
@@ -31,6 +32,14 @@ class IdentTable(val db: Db) extends Table {
     (query(s"select Name from $name where Id=$id") { rs =>
       rs.getString("Name")
     }).headOption
+  }
+
+  def printAll() = {
+    query(s"select * from $name") { rs =>
+      val n = rs.getString("Name")
+      val id = rs.getInt("Id")
+      println(s"$n :: $id")
+    }
   }
 
 }
