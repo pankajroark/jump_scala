@@ -28,7 +28,11 @@ class InvertedIdentIndexTable(
       fileId <- fileTable.idForFile(file)
       identId <- identTable.idForName(ident)
     } {
-      update(s"insert into $name values($identId, $fileId)")
+      val lookupQuery =
+        s"select * from $name where IdentId=$identId and FileId=$fileId"
+      if (!queryHasResults(lookupQuery)) {
+        update(s"insert into $name values($identId, $fileId)")
+      }
     }
   }
 

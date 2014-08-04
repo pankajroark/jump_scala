@@ -18,8 +18,13 @@ class IdentTable(val db: Db) extends Table {
   )
 
   def addIdent(s: String) = {
-    val ident = quote(s)
-    update(s"insert into $name values(null, $ident)")
+    idForName(s) match {
+      case None =>
+        val ident = quote(s)
+        update(s"insert into $name values(null, $ident)")
+      case Some(_) =>
+        // already exists
+    }
   }
 
   def idForName(n: String): Option[Int] = {
