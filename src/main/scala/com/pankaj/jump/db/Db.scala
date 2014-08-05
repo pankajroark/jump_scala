@@ -7,8 +7,18 @@ class Db {
   Class.forName("org.h2.Driver")
 
   val name = "jump"
+  val dbOptions = List(
+    "LOG=0",
+    "LOCK_MODE=0",
+    "UNDO_LOG=0",
+    "MV_STORE=FALSE",
+    "MVCC=FALSE"
+  ).mkString(";")
 
-  val conn = DriverManager.getConnection(s"jdbc:h2:~/$name;MV_STORE=FALSE;MVCC=FALSE", "sa", "")
+  val dbString = s"jdbc:h2:~/$name;$dbOptions"
+  println(dbString)
+
+  val conn = DriverManager.getConnection(dbString, "sa", "")
 
   lazy val metadata: DatabaseMetaData = conn.getMetaData
 

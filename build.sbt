@@ -12,7 +12,8 @@ libraryDependencies ++= Seq(
   "com.h2database" % "h2" % "1.4.180",
   "com.jsuereth" %% "scala-arm" % "1.3",
   "org.scalatest" %% "scalatest" % "2.2.0" % "test",
-  "org.mockito" % "mockito-all" % "1.9.5" % "test"
+  "org.mockito" % "mockito-all" % "1.9.5" % "test",
+  "com.google.guava" % "guava" % "17.0"
 )
 
 fork := true

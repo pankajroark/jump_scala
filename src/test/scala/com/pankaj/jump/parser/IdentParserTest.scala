@@ -66,4 +66,24 @@ class IdentParserSpec extends FlatSpec with Matchers {
     )
     assert(expected === ic.idents)
   }
+
+  "parser" should "ignore imports" in {
+    val content = "import identA\nidentA"
+
+    val file = getFileWithContent(content)
+    val ic = new IdentCollector
+    IdentParser.parse(file, ic)
+    val expected = List(
+      Ident("identA", 2, 1)
+    )
+    assert(expected === ic.idents)
+  }
+
+  "parser" should "ignore commented lines" in {
+    val file = new
+    File("/Users/pankajg/workspace/bc3/commerce/card-server/src/main/scala/com/twitter/promotion/config/CardsServerConfig.scala")
+    val ic = new UniqueIdentFinder
+    IdentParser.parse(file, ic)
+    println(ic.idents)
+  }
 }

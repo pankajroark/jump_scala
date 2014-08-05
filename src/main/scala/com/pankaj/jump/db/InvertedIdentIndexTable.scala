@@ -28,6 +28,21 @@ class InvertedIdentIndexTable(
     update(s"insert into $name values(${quote(ident)}, $fileNameHash)")
   }
 
+  def addFileIdents(file: String, idents: Set[String])= {
+    val fileNameHash = hash(file)
+    val stmt = db.conn.prepareStatement("insert into " + name + " values(?, ?)")
+    try {
+      for (ident <- idents) yield {
+        stmt.setString(1, ident)
+        stmt.setLong(2, fileNameHash)
+        stmt.addBatch
+      }
+      stmt.executeBatch
+    } finally {
+      stmt.close
+    }
+  }
+
 
   def filesForIdent(ident: String): List[Path] = {
     val fileIds = query(s"select FileId from $name where Ident=${quote(ident)}") { rs =>

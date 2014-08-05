@@ -21,6 +21,8 @@ case class Path(parts: Seq[String]) {
 
   def filename: String = parts.last
 
+  def fileBasename: String = filename.split('.').head
+
   def prependDir(dir: String) = Path(dir +: parts)
 
   def appendDir(dir: String): Option[Path] =

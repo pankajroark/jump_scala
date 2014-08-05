@@ -131,7 +131,11 @@ object IdentParser {
     }
   }
 
-  private def parseLine(line: String, ob: IdentParserObserver) = {
+  private def parseLine(line: String, ob: IdentParserObserver): Unit = {
+    if (line.startsWith("import")) {
+      return
+    }
+
     var identStart = false
     var sb = new StringBuilder
     for(i <- 0 until line.size) {
