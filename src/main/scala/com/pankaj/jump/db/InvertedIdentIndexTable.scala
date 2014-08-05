@@ -3,6 +3,9 @@ package com.pankaj.jump.db
 import com.pankaj.jump.{Path, hash}
 import com.pankaj.jump.parser.{Pos, JSymbol, PosShort, JSymbolShort}
 import java.sql.ResultSet
+import scala.collection.mutable
+import com.google.common.hash.{BloomFilter, Funnels}
+import com.google.common.base.Charsets
 
 class InvertedIdentIndexTable(
   val db: Db,
@@ -10,6 +13,7 @@ class InvertedIdentIndexTable(
   fileTable: FileTable
 ) extends Table {
   val name = "INV_IDENT_INDEX_TABLE"
+  val bloomMap = mutable.HashMap[String, BloomFilter[CharSequence]]()
 
   //Unique Id | name | qualified name | filepath | type | row | col
   val createString = s"create table $name(" +
@@ -28,7 +32,7 @@ class InvertedIdentIndexTable(
     update(s"insert into $name values(${quote(ident)}, $fileNameHash)")
   }
 
-  def addFileIdents(file: String, idents: Set[String])= {
+  def addFileIdentsOld(file: String, idents: Set[String])= {
     val fileNameHash = hash(file)
     val stmt = db.conn.prepareStatement("insert into " + name + " values(?, ?)")
     try {
@@ -43,8 +47,15 @@ class InvertedIdentIndexTable(
     }
   }
 
+  def addFileIdents(file: String, idents: Set[String])= {
+    val bloomFilter = BloomFilter.create(Funnels.stringFunnel(Charsets.UTF_8), 1000)
+    for (ident <- idents) {
+      bloomFilter.put(ident)
+    }
+    bloomMap += file -> bloomFilter
+  }
 
-  def filesForIdent(ident: String): List[Path] = {
+  def filesForIdentOld(ident: String): List[Path] = {
     val fileIds = query(s"select FileId from $name where Ident=${quote(ident)}") { rs =>
       rs.getLong("FileId")
     }
@@ -54,5 +65,12 @@ class InvertedIdentIndexTable(
     } yield path
   }
 
+  def filesForIdent(ident: String): List[Path] = {
+    val iter = for{
+      (file, bloom) <- bloomMap
+      if bloom.mightContain(ident)
+    } yield Path.fromString(file)
+    iter.toList
+  }
 }
 
