@@ -17,17 +17,22 @@ class IdentSearcher(invIdentIndex: InvertedIdentIndex) {
     } yield Pos(path, row, col)
 
     val (files, specs) = poss.partition(pos => !isSpec(pos.file))
-    (sorter(atPos, files) ++ specs).take(50)
+    (sortFrom(atPos, files) ++ specs).take(50)
     // todo lower priority for imports
     // todo closer to the current file the better
   }
 
-  def sorter(from: Pos, poss: List[Pos]): List[Pos] = {
-    poss.sortWith { (p1, p2) =>
-      val s1 = commonPrefix(p1.file, from.file).size
-      val s2 = commonPrefix(p2.file, from.file).size
-      s1 > s2
-    }
+  def sortFrom(from: Pos, poss: List[Pos]): List[Pos] = {
+    poss
+      .groupBy(pos => commonPrefix(pos.file, from.file))
+      .toList
+      .sortBy(_._1.size)
+      .reverse
+      .flatMap{ case (prefix, positions) =>
+        positions.sorted
+      }
+
+
     /*
     // same file first priority
     val (inSameFile, rest) = poss.partition( _.file == from.file)
