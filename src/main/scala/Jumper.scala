@@ -6,7 +6,7 @@ import java.util.concurrent.ConcurrentLinkedQueue
 import com.pankaj.jump.{AltJumpService, JumpDecider, JumpHandler, FindHandler, Path}
 import com.pankaj.jump.parser.{Parser, ParserFactory, ParseWorker}
 import com.pankaj.jump.fs.{DirtFinder, DiskCrawler, RootsTracker}
-import com.pankaj.jump.db.{Db, FileTable, IdentTable, InvertedIdentIndexTable, RootsTable, SymbolTable}
+import com.pankaj.jump.db.{Db, FileTable, IdentTable, InvertedIdentIndex, RootsTable, SymbolTable}
 import com.pankaj.jump.util.{ThreadNonBlockingActor, ThreadBlockingActor}
 import com.pankaj.jump.ident.{IdentRecorder, IdentSearcher}
 
@@ -18,17 +18,16 @@ object Jumper {
     val rootsTable = new RootsTable(db)
     val symbolTable = new SymbolTable(db, fileTable)
     val identTable = new IdentTable(db)
-    val identIndexTable = new InvertedIdentIndexTable(db, identTable, fileTable)
+    val identIndex = new InvertedIdentIndex
     fileTable.setUp()
     rootsTable.setUp()
     symbolTable.setUp()
     identTable.setUp()
-    identIndexTable.setUp()
 
     // workers
     val parserFactory = new ParserFactory
     val rootsTracker = new RootsTracker(rootsTable)
-    val identRecorder = new IdentRecorder(identTable, identIndexTable)
+    val identRecorder = new IdentRecorder(identTable, identIndex)
     val parseWorkerActor = new ThreadBlockingActor(new ParseWorker(fileTable, symbolTable, parserFactory, identRecorder), 10)
     parseWorkerActor.start()
     val dirtFinderActor = new ThreadNonBlockingActor(new DirtFinder(fileTable, parseWorkerActor))
@@ -60,7 +59,7 @@ object Jumper {
 
     val jumpDecider = new JumpDecider(parserFactory, symbolTable, fileTable)
     val jumpHandler = new JumpHandler(jumpDecider, symbolTable)
-    val identSearcher = new IdentSearcher(identIndexTable)
+    val identSearcher = new IdentSearcher(identIndex)
     val findHandler = new FindHandler(rootsTable, identSearcher)
     val port_env = System.getenv("PORT")
     val port = if (port_env != null) port_env.toInt else 8081

@@ -1,13 +1,13 @@
 package com.pankaj.jump.ident
 
 import com.pankaj.jump.{Path, Pos}
-import com.pankaj.jump.db.InvertedIdentIndexTable
+import com.pankaj.jump.db.InvertedIdentIndex
 import java.io.{File, BufferedReader, FileReader}
 import scala.collection.mutable.ListBuffer
 
-class IdentSearcher(invIdentIndexTable: InvertedIdentIndexTable) {
+class IdentSearcher(invIdentIndex: InvertedIdentIndex) {
   def search(ident: String, atPos: Pos): List[Pos] = {
-    val paths = invIdentIndexTable.filesForIdent(ident)
+    val paths = invIdentIndex.filesForIdent(ident)
     //println(s"paths :: $paths")
     // Now search in all these files and get positions
     val poss = for {
@@ -31,8 +31,7 @@ class IdentSearcher(invIdentIndexTable: InvertedIdentIndexTable) {
     // under same directory third
     val (under, rest2) = rest1.partition(p =>isUnder(fileParent.get, p.file))
     // todo: other last, but should be sorted by distance
-    // distance is defined by how many hops to get to it,
-    // i.e. through the nearest common ancestor
+    // Actually we could just keep going parent by parent and look under that, in that order
     inSameFile.sorted ++ inSameDir.sorted ++ under.sorted ++ rest2
   }
 

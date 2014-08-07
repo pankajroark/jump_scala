@@ -22,7 +22,7 @@ class IdentSearcherSpec extends FlatSpec with Matchers with MockitoSugar {
 
   def testSearch(content: String, ident: String, expected: List[(Int, Int)]) = {
     val file = getFileWithContent(content)
-    val table = mock[InvertedIdentIndexTable]
+    val table = mock[InvertedIdentIndex]
     val is = new IdentSearcher(table)
     val matches = is.searchIdentInFile(file, ident)
     assert(expected === matches)
