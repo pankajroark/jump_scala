@@ -1,6 +1,6 @@
 package com.pankaj.jump.parser
 
-import com.pankaj.jump.Path
+import com.pankaj.jump.{Path, Pos}
 
 import scala.tools.nsc.ast.parser.Parsers
 import scala.tools.nsc.{Global, Settings}
@@ -9,7 +9,6 @@ import scala.reflect.internal.util.{BatchSourceFile, NoSourceFile}
 import scala.io.Source
 import scala.annotation.tailrec
 
-case class Pos(file: Path, row: Int, col: Int)
 case class PosShort(fileId: Long, row: Int, col: Int)
 
 // @param rfqn  reverse fully qualified name e.g. "util" : "twitter" : "com"

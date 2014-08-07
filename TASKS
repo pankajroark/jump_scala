@@ -53,3 +53,4 @@ Use pwd in vim to find in
 Serialize bloom filters and store them
 Remove unneeded settings in h2
   - May be open a connection and close it after use
+  - positions should be sortable, filename, row, col

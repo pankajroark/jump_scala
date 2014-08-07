@@ -49,4 +49,8 @@ case class Path(parts: Seq[String]) {
   def extension: Option[String] =
     if (!filename.contains(".")) None
     else Some(filename.split('.').last)
+
+  def parent: Option[Path] =
+    if (parts.isEmpty) None
+    else Some(Path(parts.init))
 }

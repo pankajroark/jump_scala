@@ -1,7 +1,6 @@
 package com.pankaj.jump
 
 import com.twitter.util.{Return, Throw, Try}
-import com.pankaj.jump.parser.Pos
 import com.pankaj.jump.db.SymbolTable
 import java.io.File
 

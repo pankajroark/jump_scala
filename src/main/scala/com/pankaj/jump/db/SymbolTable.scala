@@ -1,7 +1,7 @@
 package com.pankaj.jump.db
 
-import com.pankaj.jump.Path
-import com.pankaj.jump.parser.{Pos, JSymbol, PosShort, JSymbolShort}
+import com.pankaj.jump.{Path, Pos}
+import com.pankaj.jump.parser.{JSymbol, PosShort, JSymbolShort}
 import java.sql.ResultSet
 
 // todo set up indices for name and filepath

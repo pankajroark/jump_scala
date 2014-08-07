@@ -3,6 +3,19 @@ package com.pankaj
 import com.twitter.util.{Return, Throw, Try}
 
 package object jump {
+  implicit object PosOrdering extends Ordering[Pos] {
+    def compare(a: Pos, b: Pos) = {
+      val fileComp = a.file.toString compare b.file.toString
+      if (fileComp != 0) fileComp
+      else {
+        val rowComp = a.row compare b.row
+        if (rowComp != 0) rowComp
+        else a.col compare b.col
+      }
+    }
+  }
+
+  case class Pos(file: Path, row: Int, col: Int)
 
   object IntNumber {
     def unapply(s: String): Option[Int] = Try(s.toInt).toOption

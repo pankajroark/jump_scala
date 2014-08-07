@@ -1,7 +1,6 @@
 package com.pankaj.jump
 
 import com.twitter.util.{Return, Throw, Try}
-import com.pankaj.jump.parser.Pos
 import com.pankaj.jump.ident.IdentSearcher
 import com.pankaj.jump.db.{FileTable, RootsTable, SymbolTable}
 import java.io.File
@@ -16,7 +15,7 @@ class FindHandler(
       case None => Throw(new Exception("file not under any root"))
       case Some(root) =>
         //println(s"Root >>>>> $root")
-        val matches = identSearcher.search(word)
+        val matches = identSearcher.search(word, Pos(file, row, col))
         //println(s"matches >>>>>>>>> $matches")
         val matching = for {
           l <- matches

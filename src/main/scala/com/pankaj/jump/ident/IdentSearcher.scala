@@ -1,13 +1,12 @@
 package com.pankaj.jump.ident
 
-import com.pankaj.jump.Path
-import com.pankaj.jump.parser.Pos
+import com.pankaj.jump.{Path, Pos}
 import com.pankaj.jump.db.InvertedIdentIndexTable
 import java.io.{File, BufferedReader, FileReader}
 import scala.collection.mutable.ListBuffer
 
 class IdentSearcher(invIdentIndexTable: InvertedIdentIndexTable) {
-  def search(ident: String): List[Pos] = {
+  def search(ident: String, atPos: Pos): List[Pos] = {
     val paths = invIdentIndexTable.filesForIdent(ident)
     //println(s"paths :: $paths")
     // Now search in all these files and get positions
@@ -18,9 +17,33 @@ class IdentSearcher(invIdentIndexTable: InvertedIdentIndexTable) {
     } yield Pos(path, row, col)
 
     val (files, specs) = poss.partition(pos => !isSpec(pos.file))
-    (files ++ specs).take(50)
+    (sorter(atPos, files) ++ specs).take(50)
     // todo lower priority for imports
     // todo closer to the current file the better
+  }
+
+  def sorter(from: Pos, poss: List[Pos]): List[Pos] = {
+    // same file first priority
+    val (inSameFile, rest) = poss.partition( _.file == from.file)
+    val fileParent = from.file.parent
+    // same directory second
+    val (inSameDir, rest1) = rest.partition(fileParent == _.file.parent)
+    // under same directory third
+    val (under, rest2) = rest1.partition(p =>isUnder(fileParent.get, p.file))
+    // todo: other last, but should be sorted by distance
+    // distance is defined by how many hops to get to it,
+    // i.e. through the nearest common ancestor
+    inSameFile.sorted ++ inSameDir.sorted ++ under.sorted ++ rest2
+  }
+
+  def commonPrefix(p1: Path, p2: Path): Path = {
+    val commonPartPairs = (p1.parts zip p2.parts).takeWhile(Function.tupled(_ == _))
+    Path(commonPartPairs.map(_._1))
+  }
+
+  //
+  def isUnder(root: Path, below: Path): Boolean = {
+    commonPrefix(root, below) == root
   }
 
   def unallowed(line: String): Boolean = {

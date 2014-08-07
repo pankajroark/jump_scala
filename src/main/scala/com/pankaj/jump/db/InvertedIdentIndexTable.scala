@@ -1,7 +1,7 @@
 package com.pankaj.jump.db
 
-import com.pankaj.jump.{Path, hash}
-import com.pankaj.jump.parser.{Pos, JSymbol, PosShort, JSymbolShort}
+import com.pankaj.jump.{Pos, Path, hash}
+import com.pankaj.jump.parser.{JSymbol, PosShort, JSymbolShort}
 import java.sql.ResultSet
 import scala.collection.mutable
 import com.google.common.hash.{BloomFilter, Funnels}
