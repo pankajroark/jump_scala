@@ -1,4 +1,4 @@
-package com.pankaj.jump.db
+ com.pankaj.jump.db
 
 import com.pankaj.jump.Path
 import com.pankaj.jump.parser.{Pos, JSymbol, PosShort, JSymbolShort}

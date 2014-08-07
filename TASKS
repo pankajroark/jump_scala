@@ -46,3 +46,10 @@ S-u-p-p-o-r-t- -a- -w-a-y- -o-f- -l-i-s-t-i-n-g- -t-h-e- -c-l-o-s-e-s-t- -m-a-t-
 F-i-x- -h-a-n-d-l-i-n-g- -o-f- -c-a-s-e- -o-b-j-e-c-t-s-.
 When listing multiple matches also show the content of respective lines
 Reduce memory consumption.
+
+Sort project find output.
+Use pwd in vim to find in
+  - It should be possible to specify the path to search in, in project find
+Serialize bloom filters and store them
+Remove unneeded settings in h2
+  - May be open a connection and close it after use

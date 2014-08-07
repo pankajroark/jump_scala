@@ -8,9 +8,6 @@ class Db {
 
   val name = "jump"
   val dbOptions = List(
-    "LOG=0",
-    "LOCK_MODE=0",
-    "UNDO_LOG=0",
     "MV_STORE=FALSE",
     "MVCC=FALSE"
   ).mkString(";")
