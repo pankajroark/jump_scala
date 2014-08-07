@@ -1,6 +1,7 @@
 package com.pankaj
 
-import com.twitter.util.{Return, Throw, Try}
+import com.twitter.util.{Return, Throw, Try, Timer}
+import com.twitter.conversions.time._
 
 package object jump {
   implicit object PosOrdering extends Ordering[Pos] {
@@ -68,6 +69,28 @@ package object jump {
       h = 31*h + s(i);
     }
     h
+  }
+
+  def scheduleWithPeriod(
+    timer: Timer,
+    envVar: String,
+    defaultPeriodSecs: Int
+  )(
+    f: => Unit
+  ) = {
+    val env = System.getenv(envVar)
+    val period =
+      if (env != null) env.toInt
+      else defaultPeriodSecs
+    timer.schedule(period.seconds) {
+      try {
+        f
+      } catch {
+        case e: Throwable =>
+          println("error")
+          e.printStackTrace
+      }
+    }
   }
 
 }

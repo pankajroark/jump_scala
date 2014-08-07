@@ -1,8 +1,8 @@
 import com.twitter.util.{Await, Future}
 import com.twitter.util.ScheduledThreadPoolTimer
-import com.twitter.conversions.time._
 import java.net.InetSocketAddress
 import java.util.concurrent.ConcurrentLinkedQueue
+import com.pankaj.jump.scheduleWithPeriod
 import com.pankaj.jump.{AltJumpService, JumpDecider, JumpHandler, FindHandler, Path}
 import com.pankaj.jump.parser.{Parser, ParserFactory, ParseWorker}
 import com.pankaj.jump.fs.{DirtFinder, DiskCrawler, RootsTracker}
@@ -52,28 +52,16 @@ object Jumper {
     diskCrawlerActor.start()
     val indexWriterActor = new ThreadNonBlockingActor(new InvertedIdentIndexSerializer)
     indexWriterActor.start()
-    indexWriterActor.send(identIndex)
 
     val timer = new ScheduledThreadPoolTimer()
-    val crawl_period_env = System.getenv("DISK_CRAWL_PERIOD")
-    val crawl_period =
-      if (crawl_period_env != null) crawl_period_env.toInt
-      else 60
-    timer.schedule(crawl_period.seconds) {
-      try {
-        diskCrawlerActor.send(())
-        //fileTable.printFiles()
-        //rootsTable.printRoots()
-        dirtFinderActor.send(())
-        indexWriterActor.send(identIndex)
-        //symbolTable.printAll()
-      } catch {
-        case e: Throwable =>
-          println("error")
-          e.printStackTrace
-      }
+    scheduleWithPeriod(timer, "DISK_CRAWL_PERIOD", 60){
+      diskCrawlerActor.send(())
+      dirtFinderActor.send(())
     }
 
+    scheduleWithPeriod(timer, "BLOOM_SYNC_PERIOD", 300){
+      indexWriterActor.send(identIndex)
+    }
     val jumpDecider = new JumpDecider(parserFactory, symbolTable, fileTable)
     val jumpHandler = new JumpHandler(jumpDecider, symbolTable)
     val identSearcher = new IdentSearcher(identIndex)

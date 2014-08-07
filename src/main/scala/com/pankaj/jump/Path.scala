@@ -53,4 +53,6 @@ case class Path(parts: Seq[String]) {
   def parent: Option[Path] =
     if (parts.isEmpty) None
     else Some(Path(parts.init))
+
+  def size: Int = parts.size
 }

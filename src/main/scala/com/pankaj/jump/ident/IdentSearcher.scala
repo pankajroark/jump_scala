@@ -23,6 +23,12 @@ class IdentSearcher(invIdentIndex: InvertedIdentIndex) {
   }
 
   def sorter(from: Pos, poss: List[Pos]): List[Pos] = {
+    poss.sortWith { (p1, p2) =>
+      val s1 = commonPrefix(p1.file, from.file).size
+      val s2 = commonPrefix(p2.file, from.file).size
+      s1 > s2
+    }
+    /*
     // same file first priority
     val (inSameFile, rest) = poss.partition( _.file == from.file)
     val fileParent = from.file.parent
@@ -33,6 +39,7 @@ class IdentSearcher(invIdentIndex: InvertedIdentIndex) {
     // todo: other last, but should be sorted by distance
     // Actually we could just keep going parent by parent and look under that, in that order
     inSameFile.sorted ++ inSameDir.sorted ++ under.sorted ++ rest2
+    */
   }
 
   def commonPrefix(p1: Path, p2: Path): Path = {
