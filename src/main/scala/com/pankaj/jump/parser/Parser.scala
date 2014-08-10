@@ -128,12 +128,6 @@ class Parser {
   // @return (Imports, Package)
   // package is reverse
   def trackDownSymbol(word: String, loc: Pos): (List[JImport], List[String]) = {
-    def wordInside(p: Position): Boolean = {
-      p.line == loc.row &&
-      p.column <= loc.col &&
-      p.column + word.size > loc.col
-    }
-
     class FindWithTrace extends Traverser {
       import collection.mutable
       private val _path: mutable.Stack[Tree] = mutable.Stack()
@@ -144,18 +138,24 @@ class Parser {
       def trace: List[Tree] = _trace
       def imports: List[Import] = _imports
 
-      private def hasLoc(p: Position): Boolean =  {
-        p match {
-          case NoPosition => false
-          case _ =>
-            wordInside(p)
+      //private def isMatch(t: Tree) = hasLoc(t.pos) && hasName(t)
+      private def isMatch(t: Tree) = {
+        t match {
+          case n: NameTree =>
+            val name = n.name.toString
+            val p = t.pos
+            name == word &&
+            p.line == loc.row &&
+            loc.col >= p.column &&
+            loc.col < p.column + name.size
+          case _ => false
         }
       }
 
       override def traverse(t: Tree) = {
         if (!_found) {
           _path push t
-          if(hasLoc(t.pos)) {
+          if(isMatch(t)) {
             _found = true
             _trace = _path.toList
           } else {

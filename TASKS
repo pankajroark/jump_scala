@@ -51,6 +51,14 @@ Sort project find output.
 Use pwd in vim to find in
   - It should be possible to specify the path to search in, in project find
 Serialize bloom filters and store them
-Remove unneeded settings in h2
+H2
   - May be open a connection and close it after use
-  - positions should be sortable, filename, row, col
+ - --- -p-o-s-i-t-i-o-n-s- -s-h-o-u-l-d- -b-e- -s-o-r-t-a-b-l-e-,- -f-i-l-e-n-a-m-e-,- -r-o-w-,- -c-o-l
+
+ File Search:
+   - Strategy
+     - Split words. Break given term and search as prefixes in these strings
+   - Smaller Problem
+     - How to find the prefix matches of a string from a bunch of strings
+
+
