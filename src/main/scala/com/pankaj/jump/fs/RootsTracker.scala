@@ -11,7 +11,8 @@ class RootsTracker(rootsTable: RootsTable) {
   def roots: List[String] = rootsTable.getRoots()
 
   // We can cache this possibly, check the cached candidates first
-  private def findGitRoot(path: Path): Option[Path] = {
+  // This one actually goes to disk and checks
+  private def findGitRootOnDisk(path: Path): Option[Path] = {
     path.allDirs find { p =>
       (p.appendDir(".git") map { gitPath =>
         val gitDir = new File(gitPath.toString)
@@ -21,11 +22,16 @@ class RootsTracker(rootsTable: RootsTable) {
   }
 
   def track(path: Path): Boolean = {
-    findGitRoot(path) match {
+    findGitRootOnDisk(path) match {
       case Some(root) =>
           rootsTable.addRoot(root)
         true
       case None => false
     }
+  }
+
+  // Try to find a git root for path in the table
+  def findGitRoot(path: Path): Option[Path] = {
+    roots.find(path.toString.startsWith(_)) map { Path.fromString(_) }
   }
 }

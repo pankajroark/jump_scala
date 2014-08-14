@@ -1,11 +1,18 @@
 package com.pankaj.jump
 
 import com.pankaj.jump.parser._
+import com.pankaj.jump.fs.RootsTracker
 import com.pankaj.jump.db.{SymbolTable, FileTable}
 import scala.annotation.tailrec
 
-class JumpDecider(parserFactory: ParserFactory, symbolTable: SymbolTable, fileTable: FileTable) {
+class JumpDecider(
+  parserFactory: ParserFactory,
+  symbolTable: SymbolTable,
+  fileTable: FileTable,
+  rootsTracker: RootsTracker
+) {
   def choose(word: String, pos: Pos, choices: List[JSymbolShort]): List[JSymbol] = {
+    println(choices.mkString("\n"))
     val (imports, pkg) = parserFactory.get.trackDownSymbol(word, pos)
 
     def tryFindExactMatchWithoutRenames(): List[JSymbolShort] = {
@@ -79,7 +86,6 @@ class JumpDecider(parserFactory: ParserFactory, symbolTable: SymbolTable, fileTa
             case (p::ps, Nil) => // import is longer than choice
               Int.MaxValue
             case (Nil, z) => ys.size
-            case (Nil, Nil) => 0
           }
         }
         go(imp, choice, 0)
@@ -125,10 +131,29 @@ class JumpDecider(parserFactory: ParserFactory, symbolTable: SymbolTable, fileTa
     tryLongestPrefixMatch() orElseUse choices
 
     val distinctOnLocation = chosen.groupBy(_.loc).map{_._2.head}.toList
-    (distinctOnLocation flatMap { jshort =>
+    val chosenSymbols = (distinctOnLocation flatMap { jshort =>
       jshort.toJSymbol{ id => fileTable.fileForId(id) }
     })
     //choices.headOption
+    withSameRoot(pos, chosenSymbols)
+  }
+
+  def withSameRoot(pos: Pos, choices: List[JSymbol]): List[JSymbol] = {
+    // [TODO] find current file's git root
+    // find git roots of all choice files
+    // Eliminate the ones that have the same origin but different git root
+
+    // For now just find matches under current root
+    rootsTracker.findGitRoot(pos.file) match {
+      case Some(root) =>
+        choices.filter { choice =>
+          val file = choice.loc.file
+          file.startsWith(root)
+        }
+      case None => choices
+    }
+
+
   }
 }
 

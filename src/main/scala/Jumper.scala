@@ -62,7 +62,7 @@ object Jumper {
     scheduleWithPeriod(timer, "BLOOM_SYNC_PERIOD", 300){
       indexWriterActor.send(identIndex)
     }
-    val jumpDecider = new JumpDecider(parserFactory, symbolTable, fileTable)
+    val jumpDecider = new JumpDecider(parserFactory, symbolTable, fileTable, rootsTracker)
     val jumpHandler = new JumpHandler(jumpDecider, symbolTable)
     val identSearcher = new IdentSearcher(identIndex)
     val findHandler = new FindHandler(rootsTable, identSearcher)

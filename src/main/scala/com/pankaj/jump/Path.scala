@@ -12,6 +12,11 @@ object Path {
   implicit object PathOrdering extends Ordering[Path] {
     def compare(a: Path, b: Path) = a.parts.mkString compare b.parts.mkString
   }
+
+  def commonPrefix(p1: Path, p2: Path): Path = {
+    val commonPartPairs = (p1.parts zip p2.parts).takeWhile(Function.tupled(_ == _))
+    Path(commonPartPairs.map(_._1))
+  }
 }
 
 case class Path(parts: Seq[String]) {
@@ -55,4 +60,16 @@ case class Path(parts: Seq[String]) {
     else Some(Path(parts.init))
 
   def size: Int = parts.size
+
+  def startsWith(p2: Path): Boolean = {
+    @tailrec
+    def go(big: List[String], small: List[String]): Boolean = {
+      (big, small) match {
+        case (x::xs, y::ys) => if (x == y) go(xs, ys) else false
+        case (Nil, y::ys) => false
+        case _ => true
+      }
+    }
+    go(parts.toList, p2.parts.toList)
+  }
 }

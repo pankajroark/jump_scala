@@ -1,6 +1,7 @@
 package com.pankaj.jump.ident
 
 import com.pankaj.jump.{Path, Pos}
+import com.pankaj.jump.Path.commonPrefix
 import com.pankaj.jump.db.InvertedIdentIndex
 import java.io.{File, BufferedReader, FileReader}
 import scala.collection.mutable.ListBuffer
@@ -45,11 +46,6 @@ class IdentSearcher(invIdentIndex: InvertedIdentIndex) {
     // Actually we could just keep going parent by parent and look under that, in that order
     inSameFile.sorted ++ inSameDir.sorted ++ under.sorted ++ rest2
     */
-  }
-
-  def commonPrefix(p1: Path, p2: Path): Path = {
-    val commonPartPairs = (p1.parts zip p2.parts).takeWhile(Function.tupled(_ == _))
-    Path(commonPartPairs.map(_._1))
   }
 
   //
