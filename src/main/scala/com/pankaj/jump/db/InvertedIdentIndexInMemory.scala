@@ -12,7 +12,7 @@ object InvertedIdentIndexInMemory {
   val StringFunnel = Funnels.stringFunnel(Charsets.UTF_8)
   // write to output stream
   // closing the stream is left to called
-  def serialize(index: InvertedIdentIndex, out: OutputStream) = {
+  def serialize(index: InvertedIdentIndexInMemory, out: OutputStream) = {
     val oos = new ObjectOutputStream(out)
     val bloomMap = index.bloomMap
     oos.writeInt(bloomMap.size)
@@ -24,7 +24,7 @@ object InvertedIdentIndexInMemory {
     oos.flush()
   }
 
-  def deserialize(in: FileInputStream): InvertedIdentIndex = {
+  def deserialize(in: FileInputStream): InvertedIdentIndexInMemory = {
     val index = new InvertedIdentIndexInMemory
     val ois = new ObjectInputStream(in)
     var bloomMap = Map[String, ( Long, BloomFilter[CharSequence])]()

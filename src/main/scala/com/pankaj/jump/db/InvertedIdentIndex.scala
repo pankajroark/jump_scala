@@ -6,6 +6,5 @@ import com.pankaj.jump.Path
 trait InvertedIdentIndex {
   def addFileIdents(file: String, idents: Set[String], timestamp: Long)
   def filesForIdent(ident: String): List[Path]
-  def bloomMap: Iterator[(String, ( Long, BloomFilter[CharSequence]))]
 }
 

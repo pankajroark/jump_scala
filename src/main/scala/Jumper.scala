@@ -19,7 +19,7 @@ object Jumper {
     val rootsTable = new RootsTable(db)
     val symbolTable = new SymbolTable(db, fileTable)
     val identTable = new IdentTable(db)
-    val identIndex = {
+    val identIndex: InvertedIdentIndexInMemory = {
       val indexFileName = InvertedIdentIndexSerializer.indexFileName
       val indexFile = new File(indexFileName)
       if (indexFile.exists) {

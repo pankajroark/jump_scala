@@ -9,10 +9,10 @@ object InvertedIdentIndexSerializer {
 
 
 class InvertedIdentIndexSerializer
-extends (InvertedIdentIndex => Unit) {
+extends (InvertedIdentIndexInMemory => Unit) {
   import InvertedIdentIndexSerializer._
 
-  def apply(index: InvertedIdentIndex): Unit = {
+  def apply(index: InvertedIdentIndexInMemory): Unit = {
     // write to a temporary file first
     // them replace the existing file with it
     val temp = File.createTempFile("temp",".index");
