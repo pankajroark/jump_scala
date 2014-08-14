@@ -17,7 +17,7 @@ extends (InvertedIdentIndex => Unit) {
     // them replace the existing file with it
     val temp = File.createTempFile("temp",".index");
     val fos = new FileOutputStream(temp)
-    InvertedIdentIndex.serialize(index, fos)
+    InvertedIdentIndexInMemory.serialize(index, fos)
     fos.close
     val indexFile = new File(indexFileName)
     indexFile.delete()

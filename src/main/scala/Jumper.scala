@@ -25,11 +25,11 @@ object Jumper {
       if (indexFile.exists) {
         println(s"reading bloom index $indexFileName")
         val is = new FileInputStream(indexFile)
-        val index = InvertedIdentIndex.deserialize(is)
+        val index = InvertedIdentIndexInMemory.deserialize(is)
         is.close()
         index
       } else {
-        new InvertedIdentIndex
+        new InvertedIdentIndexInMemory
       }
     }
     fileTable.setUp()
