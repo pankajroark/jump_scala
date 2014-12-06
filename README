@@ -45,3 +45,6 @@ We may want to cache recently/frequently looked up symbols in memory.
 
 Add support for adding project root with symbol to constrain searches better.
 Add better error logging
+
+Remove word search mdfind does that job.
+Use watchman to find out when files change

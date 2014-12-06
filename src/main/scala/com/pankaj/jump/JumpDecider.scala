@@ -135,7 +135,8 @@ class JumpDecider(
       jshort.toJSymbol{ id => fileTable.fileForId(id) }
     })
     //choices.headOption
-    withSameRoot(pos, chosenSymbols)
+    chosenSymbols
+    //withSameRoot(pos, chosenSymbols)
   }
 
   def withSameRoot(pos: Pos, choices: List[JSymbol]): List[JSymbol] = {
